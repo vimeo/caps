@@ -1,6 +1,12 @@
-package gocaption
+package caps
 
-const sampleDXFP string = `
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+const sampleDFXP string = `
 <?xml version="1.0" encoding="utf-8"?>
 <tt xml:lang="en" xmlns="http://www.w3.org/ns/ttml"
     xmlns:tts="http://www.w3.org/ns/ttml#styling">
@@ -43,6 +49,69 @@ const sampleDXFP string = `
    <p begin="00:00:32.200" end="00:00:36.200" style="p">
     &lt;LAUGHING &amp; WHOOPS!&gt;
    </p>
+   <p begin="00:00:34.400" end="00:00:38.400" region="bottom" style="p">some more text</p>
   </div>
  </body>
 </tt> `
+
+const sampleDFXPSyntaxError = ` 
+  <?xml version="1.0" encoding="UTF-8"?>
+  <tt xml:lang="en" xmlns="http://www.w3.org/ns/ttml">
+  <body>
+    <div>
+      <p begin="0:00:02.07" end="0:00:05.07">>>THE GENERAL ASSEMBLY'S 2014</p>
+      <p begin="0:00:05.07" end="0:00:06.21">SESSION GOT OFF TO A LATE START,</p>
+    </div>
+   </body>
+  </tt>
+`
+
+const sampleDFXPEmpty = `
+  <?xml version="1.0" encoding="utf-8"?>
+  <tt xml:lang="en" xmlns="http://www.w3.org/ns/ttml"
+      xmlns:tts="http://www.w3.org/ns/ttml#styling">
+   <head>
+    <styling>
+     <style xml:id="p" tts:color="#ffeedd" tts:fontfamily="Arial"
+          tts:fontsize="10pt" tts:textAlign="center"/>
+    </styling>
+    <layout>
+    </layout>
+   </head>
+   <body>
+    <div xml:lang="en-US">
+    </div>
+   </body>
+  </tt>
+`
+
+func TestDection(t *testing.T) {
+	assert.True(t, NewDFXReader().Detect(sampleDFXP))
+}
+
+func TestCaptionLength(t *testing.T) {
+	captionSet, err := NewDFXReader().Read(sampleDFXP)
+	assert.Nil(t, err)
+	assert.Equal(t, 8, len(captionSet.GetCaptions("en-US")))
+}
+
+func TestEmptyFile(t *testing.T) {
+	set, err := NewDFXReader().Read(sampleDFXPEmpty)
+	assert.NotNil(t, err)
+	assert.True(t, set.IsEmpty())
+}
+
+func TestProperTimestamps(t *testing.T) {
+	captionSet, err := NewDFXReader().Read(sampleDFXP)
+	assert.Nil(t, err)
+
+	paragraph := captionSet.GetCaptions("en-US")[2]
+	assert.Equal(t, 17000000, paragraph.Start)
+	assert.Equal(t, 18752000, paragraph.End)
+}
+
+func TestInvalidMarkupIsProperlyHandled(t *testing.T) {
+	captionSet, err := NewDFXReader().Read(sampleDFXPSyntaxError)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(captionSet.GetCaptions("en-US")))
+}
