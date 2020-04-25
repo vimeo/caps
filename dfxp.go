@@ -1,6 +1,7 @@
 package caps
 
 import (
+	"encoding/xml"
 	"fmt"
 	"log"
 	"strconv"
@@ -11,15 +12,15 @@ import (
 
 const defaultLanguageCode = "en-US"
 
-type DFXReader struct {
+type DFXPReader struct {
 	framerate  string
 	multiplier []int
 	timebase   string
 	nodes      []captionNode
 }
 
-func NewDFXReader() DFXReader {
-	return DFXReader{
+func NewDFXPReader() DFXPReader {
+	return DFXPReader{
 		framerate:  "30",
 		multiplier: []int{1, 1},
 		timebase:   "media",
@@ -27,11 +28,11 @@ func NewDFXReader() DFXReader {
 	}
 }
 
-func (DFXReader) Detect(content string) bool {
+func (DFXPReader) Detect(content string) bool {
 	return strings.Contains(strings.ToLower(content), "</tt>")
 }
 
-func (r DFXReader) Read(content string) (*CaptionSet, error) {
+func (r DFXPReader) Read(content string) (*CaptionSet, error) {
 	doc, err := xmlquery.Parse(strings.NewReader(content))
 	if err != nil {
 		return nil, err
@@ -80,7 +81,10 @@ func (r DFXReader) Read(content string) (*CaptionSet, error) {
 		if id == "" {
 			id = style.SelectAttr("xml:id")
 		}
-		captions.AddStyle(id, r.translateStyle(style))
+		parsedStyle := r.translateStyle(style)
+		parsedStyle.ID = id
+		captions.AddStyle(parsedStyle)
+
 	}
 	captions = r.combineMatchingCaptions(captions)
 	if captions.IsEmpty() {
@@ -89,7 +93,7 @@ func (r DFXReader) Read(content string) (*CaptionSet, error) {
 	return captions, nil
 }
 
-func (r DFXReader) combineMatchingCaptions(captionSet *CaptionSet) *CaptionSet {
+func (r DFXPReader) combineMatchingCaptions(captionSet *CaptionSet) *CaptionSet {
 	for _, lang := range captionSet.GetLanguages() {
 		captions := captionSet.GetCaptions(lang)
 		if len(captions) <= 1 {
@@ -113,7 +117,7 @@ func (r DFXReader) combineMatchingCaptions(captionSet *CaptionSet) *CaptionSet {
 	return captionSet
 }
 
-func (r DFXReader) translateDiv(div *xmlquery.Node) []*Caption {
+func (r DFXPReader) translateDiv(div *xmlquery.Node) []*Caption {
 	captions := []*Caption{}
 	for _, pTag := range xmlquery.Find(div, "//p") {
 		if c, err := r.translatePtag(pTag); err == nil {
@@ -123,7 +127,7 @@ func (r DFXReader) translateDiv(div *xmlquery.Node) []*Caption {
 	return captions
 }
 
-func (r DFXReader) translatePtag(pTag *xmlquery.Node) (*Caption, error) {
+func (r DFXPReader) translatePtag(pTag *xmlquery.Node) (*Caption, error) {
 	start, end, err := r.findTimes(pTag)
 	if err != nil {
 		return nil, err
@@ -135,7 +139,7 @@ func (r DFXReader) translatePtag(pTag *xmlquery.Node) (*Caption, error) {
 	return &caption, nil
 }
 
-func (r DFXReader) translateTag(tag *xmlquery.Node) {
+func (r DFXPReader) translateTag(tag *xmlquery.Node) {
 	switch tag.Data {
 	case "p":
 		text := strings.TrimSpace(tag.InnerText())
@@ -153,18 +157,16 @@ func (r DFXReader) translateTag(tag *xmlquery.Node) {
 	}
 }
 
-func (r DFXReader) translateSpan(tag *xmlquery.Node) {
-	styleAttrs := r.translateStyle(tag)
-	if len(styleAttrs) > 0 {
-		style := CreateStyle(true, styleAttrs)
-		r.nodes = append(r.nodes, style)
-		for _, child := range xmlquery.Find(tag, "child::*") {
-			r.translateTag(child)
-		}
-		secondStyle := CreateStyle(false, styleAttrs)
-		r.nodes = append(r.nodes, secondStyle)
-		return
+func (r DFXPReader) translateSpan(tag *xmlquery.Node) {
+	style := r.translateStyle(tag)
+	captionStyle := CreateCaptionStyle(true, style)
+	r.nodes = append(r.nodes, captionStyle)
+	for _, child := range xmlquery.Find(tag, "child::*") {
+		r.translateTag(child)
 	}
+	secondStyle := CreateCaptionStyle(false, style)
+	r.nodes = append(r.nodes, secondStyle)
+	return
 	// FIXME this is duped, porting as is for now
 	for _, child := range xmlquery.Find(tag, "child::*") {
 		r.translateTag(child)
@@ -173,38 +175,32 @@ func (r DFXReader) translateSpan(tag *xmlquery.Node) {
 
 //FIXME: since this seems to have its own limit set of supported props,
 // return its own type instead of map[string]string, so we can have same defaults.
-func (r DFXReader) translateStyle(tag *xmlquery.Node) map[string]string {
-	attrs := map[string]string{}
+func (r DFXPReader) translateStyle(tag *xmlquery.Node) Style {
+	style := Style{}
 	for _, attr := range tag.Attr {
 		switch strings.ToLower(attr.Name.Local) {
 		case "style":
-			attrs["class"] = attr.Value
+			style.Class = attr.Value
 		case "fontstyle":
-			if attr.Value == "italic" {
-				attrs["italics"] = "true"
-			}
+			style.Italics = attr.Value == "italic"
 		case "textalign":
-			attrs["text-align"] = attr.Value
+			style.TextAlign = attr.Value
 		case "fontfamily":
-			attrs["font-family"] = attr.Value
+			style.FontFamily = attr.Value
 		case "fontsize":
-			attrs["font-size"] = attr.Value
+			style.FontSize = attr.Value
 		case "color":
-			attrs["color"] = attr.Value
+			style.Color = attr.Value
 		case "fontweight":
-			if attr.Value == "bold" {
-				attrs["bold"] = "true"
-			}
+			style.Bold = attr.Value == "bold"
 		case "textdecoration":
-			if attr.Value == "underline" {
-				attrs["underline"] = "true"
-			}
+			style.Underline = attr.Value == "underline"
 		}
 	}
-	return attrs
+	return style
 }
 
-func (r DFXReader) findTimes(root *xmlquery.Node) (int, int, error) {
+func (r DFXPReader) findTimes(root *xmlquery.Node) (int, int, error) {
 	begin := root.SelectAttr("begin")
 	if begin == "" {
 		return 0, 0, fmt.Errorf("tag doesnt have a time begin")
@@ -230,7 +226,7 @@ func (r DFXReader) findTimes(root *xmlquery.Node) (int, int, error) {
 	return start, end, nil
 }
 
-func (r DFXReader) translateTime(stamp string) (int, error) {
+func (r DFXPReader) translateTime(stamp string) (int, error) {
 	timesplit := strings.Split(stamp, ":")
 	if !strings.Contains(timesplit[2], ".") {
 		timesplit[2] = timesplit[2] + ".000"
@@ -277,4 +273,88 @@ func (r DFXReader) translateTime(stamp string) (int, error) {
 	}
 
 	return microseconds, nil
+}
+
+type DFXPHead struct {
+	Style  dfxpStyle `xml:"styling>style"`
+	Layout string    `xml:"layout>region"`
+}
+
+type DFXPBody struct {
+}
+
+type DFXPBaseMarkup struct {
+	XMLName    xml.Name `xml:"tt"`
+	TtXMLLang  string   `xml:"xml:lang,attr" default:"en"`
+	TtXMLns    string   `xml:"xmlns,attr" default:"http://www.w3.org/ns/ttml"`
+	TtXMLnsTTS string   `xml:"xmlns:tts,attr" default:"http://www.w3.org/ns/ttml#styling"`
+	Head       DFXPHead `xml:"head"`
+	Body       DFXPBody `xml:"body"`
+}
+
+func NewDFXPBaseMarkup() DFXPBaseMarkup {
+	return DFXPBaseMarkup{
+		TtXMLLang:  "en",
+		TtXMLns:    "http://www.w3.org/ns/ttml",
+		TtXMLnsTTS: "http://www.w3.org/ns/ttml#styling",
+	}
+}
+
+type DFXPWriter struct {
+	pStyle   bool
+	openSpan bool
+}
+
+type dfxpStyle struct {
+	XMLName       xml.Name `xml:"style"`
+	ID            string   `xml:"xml:id,attr"`
+	TTSTextAlign  string   `xml:"tts:textAlign,attr,omitempty"`
+	TTSFontStyle  string   `xml:"tts:fontStyle,attr,omitempty"`
+	TTSFontFamily string   `xml:"tts:fontFamily,attr,omitempty"`
+	TTSFontSize   string   `xml:"tts:fontSize,attr,omitempty"`
+	TTSFontWeight string   `xml:"tts:fontweight,attr,omitempty"`
+	TTSColor      string   `xml:"tts:color,attr,omitempty"`
+	// FIXME this is never parsed to Style
+	TTSDisplayAlign string `xml:"tts:displayAlign,attr,omitempty"`
+}
+
+func NewDFXPStyle(style Style) dfxpStyle {
+	fontStyle := ""
+	if style.Italics {
+		fontStyle = "italic"
+	}
+	fontWeight := ""
+	if style.Bold {
+		fontWeight = "bold"
+	}
+	return dfxpStyle{
+		ID:            style.ID,
+		TTSTextAlign:  style.TextAlign,
+		TTSFontStyle:  fontStyle,
+		TTSFontFamily: style.FontFamily,
+		TTSFontSize:   style.FontSize,
+		TTSColor:      style.Color,
+		TTSFontWeight: fontWeight,
+		// FIXME this is never parsed to Style
+		TTSDisplayAlign: "",
+	}
+}
+
+//TODO implement XML Marshal grabing values from embeded Style.
+
+func NewDFXPWriter() DFXPWriter {
+	return DFXPWriter{
+		false,
+		false,
+	}
+}
+
+func (w DFXPWriter) Write(captions *CaptionSet) (DFXPBaseMarkup, error) {
+	var st dfxpStyle
+	for _, style := range captions.GetStyles() {
+		st = NewDFXPStyle(style)
+	}
+	base := NewDFXPBaseMarkup()
+	base.Head = DFXPHead{Style: st}
+	return base, nil
 }

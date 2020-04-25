@@ -1,6 +1,8 @@
 package caps
 
 import (
+	"encoding/xml"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,23 +88,23 @@ const sampleDFXPEmpty = `
 `
 
 func TestDection(t *testing.T) {
-	assert.True(t, NewDFXReader().Detect(sampleDFXP))
+	assert.True(t, NewDFXPReader().Detect(sampleDFXP))
 }
 
 func TestCaptionLength(t *testing.T) {
-	captionSet, err := NewDFXReader().Read(sampleDFXP)
+	captionSet, err := NewDFXPReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 	assert.Equal(t, 8, len(captionSet.GetCaptions("en-US")))
 }
 
 func TestEmptyFile(t *testing.T) {
-	set, err := NewDFXReader().Read(sampleDFXPEmpty)
+	set, err := NewDFXPReader().Read(sampleDFXPEmpty)
 	assert.NotNil(t, err)
 	assert.True(t, set.IsEmpty())
 }
 
 func TestProperTimestamps(t *testing.T) {
-	captionSet, err := NewDFXReader().Read(sampleDFXP)
+	captionSet, err := NewDFXPReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 
 	paragraph := captionSet.GetCaptions("en-US")[2]
@@ -111,7 +113,28 @@ func TestProperTimestamps(t *testing.T) {
 }
 
 func TestInvalidMarkupIsProperlyHandled(t *testing.T) {
-	captionSet, err := NewDFXReader().Read(sampleDFXPSyntaxError)
+	captionSet, err := NewDFXPReader().Read(sampleDFXPSyntaxError)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(captionSet.GetCaptions("en-US")))
+}
+
+func TestStructToXML(t *testing.T) {
+	base := &DFXPBaseMarkup{
+		TtXMLLang:  "en",
+		TtXMLns:    "http://www.w3.org/ns/ttml",
+		TtXMLnsTTS: "http://www.w3.org/ns/ttml#styling",
+	}
+
+	output, err := xml.MarshalIndent(base, "  ", "    ")
+	fmt.Println(err)
+	fmt.Println(string(output))
+}
+
+func TestDFXPWriter(t *testing.T) {
+	captionSet, err := NewDFXPReader().Read(sampleDFXP)
+	assert.Nil(t, err)
+	data, _ := NewDFXPWriter().Write(captionSet)
+	output, err := xml.MarshalIndent(data, "  ", "    ")
+	fmt.Println(err)
+	fmt.Println(string(output))
 }

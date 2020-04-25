@@ -2,6 +2,7 @@ package caps
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -39,7 +40,7 @@ func (c captionText) GetContent() string {
 }
 
 type captionStyle struct {
-	content map[string]string
+	content Style
 	start   bool
 }
 
@@ -48,15 +49,11 @@ func (captionStyle) Kind() kind {
 }
 
 func (c captionStyle) GetContent() string {
-	rawContent := ""
-	for k, v := range c.content {
-		rawContent += fmt.Sprintf("%s: %s\n", k, v)
-	}
-	return rawContent
+	return c.content.String()
 }
 
-func CreateStyle(start bool, content map[string]string) captionNode {
-	return captionStyle{content, start}
+func CreateCaptionStyle(start bool, style Style) captionNode {
+	return captionStyle{style, start}
 }
 
 type captionBreak struct{}
@@ -70,18 +67,60 @@ func (c captionBreak) GetContent() string {
 }
 
 type Caption struct {
-	Start  int
-	End    int
-	Nodes  []captionNode
-	Styles map[string]string
+	Start int
+	End   int
+	Nodes []captionNode
+	Style Style
 }
 
-func NewCaption(start, end int, nodes []captionNode, styles map[string]string) Caption {
+const defaultStyleID = "default"
+
+// FIXME This is a simple placeholder for style types, this can be better represented
+// but I need to implement more caption types first(this was written with just the dfxp)
+type Style struct {
+	ID         string
+	Class      string
+	TextAlign  string
+	FontFamily string
+	FontSize   string
+	Color      string
+	Italics    bool
+	Bold       bool
+	Underline  bool
+}
+
+func (s Style) String() string {
+	return fmt.Sprintf(`
+	class: %s\n
+	text-align: %s\n
+	font-family: %s\n
+	font-size: %s\n
+	color: %s\n
+	italics: %s\n
+	bold: %s\n
+	underline: %s\n
+	`,
+		s.Class,
+		s.TextAlign,
+		s.FontFamily,
+		s.FontSize,
+		s.Color,
+		strconv.FormatBool(s.Italics),
+		strconv.FormatBool(s.Bold),
+		strconv.FormatBool(s.Underline),
+	)
+}
+
+func DefaultStyle() Style {
+	return Style{Color: "white", FontFamily: "monospace", FontSize: "1c"}
+}
+
+func NewCaption(start, end int, nodes []captionNode, style Style) Caption {
 	return Caption{
 		start,
 		end,
 		nodes,
-		styles,
+		style,
 	}
 }
 
@@ -108,13 +147,13 @@ func (c Caption) GetText() string {
 }
 
 type CaptionSet struct {
-	Styles   map[string]map[string]string
+	Styles   map[string]Style
 	Captions map[string][]*Caption
 }
 
 func NewCaptionSet() *CaptionSet {
 	return &CaptionSet{
-		Styles:   map[string]map[string]string{},
+		Styles:   map[string]Style{},
 		Captions: map[string][]*Caption{},
 	}
 }
@@ -148,19 +187,19 @@ func (c CaptionSet) GetCaptions(lang string) []*Caption {
 	return captions
 }
 
-func (c CaptionSet) AddStyle(id string, style map[string]string) {
-	c.Styles[id] = style
+func (c CaptionSet) AddStyle(style Style) {
+	c.Styles[style.ID] = style
 }
 
-func (c CaptionSet) GetStyle(id string) map[string]string {
+func (c CaptionSet) GetStyle(id string) Style {
 	if style, ok := c.Styles[id]; ok {
 		return style
 	}
-	return map[string]string{}
+	return DefaultStyle()
 }
 
-func (c CaptionSet) GetStyles() []map[string]string {
-	values := []map[string]string{}
+func (c CaptionSet) GetStyles() []Style {
+	values := []Style{}
 	for _, v := range c.Styles {
 		values = append(values, v)
 	}
