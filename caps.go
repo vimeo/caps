@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type kind int
@@ -144,6 +145,19 @@ func (c Caption) GetText() string {
 		}
 	}
 	return content.String()
+}
+
+func (c Caption) FormatStart() string {
+	return formatTimestamp(c.Start)
+}
+
+func (c Caption) FormatEnd() string {
+	return formatTimestamp(c.End)
+}
+
+func formatTimestamp(value int) string {
+	timestamp := time.Duration(value/1000) * time.Millisecond
+	return fmt.Sprintf("0%s", timestamp)
 }
 
 type CaptionSet struct {

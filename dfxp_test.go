@@ -56,7 +56,7 @@ const sampleDFXP string = `
  </body>
 </tt> `
 
-const sampleDFXPSyntaxError = ` 
+const sampleDFXPSyntaxError = `
   <?xml version="1.0" encoding="UTF-8"?>
   <tt xml:lang="en" xmlns="http://www.w3.org/ns/ttml">
   <body>
@@ -119,7 +119,7 @@ func TestInvalidMarkupIsProperlyHandled(t *testing.T) {
 }
 
 func TestStructToXML(t *testing.T) {
-	base := &DFXPBaseMarkup{
+	base := DFXPBaseMarkup{
 		TtXMLLang:  "en",
 		TtXMLns:    "http://www.w3.org/ns/ttml",
 		TtXMLnsTTS: "http://www.w3.org/ns/ttml#styling",
@@ -137,4 +137,6 @@ func TestDFXPWriter(t *testing.T) {
 	output, err := xml.MarshalIndent(data, "  ", "    ")
 	fmt.Println(err)
 	fmt.Println(string(output))
+	fmt.Println("--------------------------")
+	fmt.Println(sampleDFXP)
 }

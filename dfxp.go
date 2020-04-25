@@ -276,11 +276,41 @@ func (r DFXPReader) translateTime(stamp string) (int, error) {
 }
 
 type DFXPHead struct {
-	Style  dfxpStyle `xml:"styling>style"`
-	Layout string    `xml:"layout>region"`
+	Style  dfxpStyle  `xml:"styling>style"`
+	Layout dfxpRegion `xml:"layout>region"`
 }
 
-type DFXPBody struct {
+type dfxpRegion struct {
+	XMLName         xml.Name `xml:"region"`
+	ID              string   `xml:"xml:id,attr"`
+	TTSTextAlign    string   `xml:"tts:textAlign,attr,omitempty"`
+	TTSDisplayAlign string   `xml:"tts:displayAlign,attr,omitempty"`
+}
+
+func dfxpDefaultRegion() dfxpRegion {
+	return dfxpRegion{
+		ID:              "bottom",
+		TTSTextAlign:    "center",
+		TTSDisplayAlign: "after",
+	}
+}
+
+type dfxpP struct {
+	XMLName xml.Name `xml:"p"`
+	Begin   string   `xml:"begin,attr"`
+	End     string   `xml:"end,attr"`
+	StyleID string   `xml:"style,attr"`
+}
+
+type dfxpLang struct {
+	XMLName xml.Name `xml:"div"`
+	Lang    string   `xml:"xml:lang,attr"`
+	Ps      []dfxpP
+}
+
+type dfxpBody struct {
+	XMLName xml.Name `xml:"body"`
+	Langs   []dfxpLang
 }
 
 type DFXPBaseMarkup struct {
@@ -289,7 +319,7 @@ type DFXPBaseMarkup struct {
 	TtXMLns    string   `xml:"xmlns,attr" default:"http://www.w3.org/ns/ttml"`
 	TtXMLnsTTS string   `xml:"xmlns:tts,attr" default:"http://www.w3.org/ns/ttml#styling"`
 	Head       DFXPHead `xml:"head"`
-	Body       DFXPBody `xml:"body"`
+	Body       dfxpBody `xml:"body"`
 }
 
 func NewDFXPBaseMarkup() DFXPBaseMarkup {
@@ -316,6 +346,15 @@ type dfxpStyle struct {
 	TTSColor      string   `xml:"tts:color,attr,omitempty"`
 	// FIXME this is never parsed to Style
 	TTSDisplayAlign string `xml:"tts:displayAlign,attr,omitempty"`
+}
+
+func dfxpDefaultStyle() dfxpStyle {
+	return dfxpStyle{
+		ID:            "default",
+		TTSColor:      "white",
+		TTSFontFamily: "monospace",
+		TTSFontSize:   "1c",
+	}
 }
 
 func NewDFXPStyle(style Style) dfxpStyle {
@@ -349,12 +388,24 @@ func NewDFXPWriter() DFXPWriter {
 	}
 }
 
+// TODO: rewrite all _recreate from python's DFXPWriter class
+
 func (w DFXPWriter) Write(captions *CaptionSet) (DFXPBaseMarkup, error) {
-	var st dfxpStyle
+	st := dfxpDefaultStyle()
 	for _, style := range captions.GetStyles() {
 		st = NewDFXPStyle(style)
 	}
 	base := NewDFXPBaseMarkup()
-	base.Head = DFXPHead{Style: st}
+	base.Head = DFXPHead{Style: st, Layout: dfxpDefaultRegion()}
+	for _, lang := range captions.GetLanguages() {
+		divLang := dfxpLang{Lang: lang, Ps: []dfxpP{}}
+		for _, caption := range captions.GetCaptions(lang) {
+			s := dfxpDefaultStyle()
+			//			if caption.Style.ID != "" {
+			//				s = caption.Style
+			//			}
+			divLang.Ps = append(divlang.Ps, dfxpP{BegingP})
+		}
+	}
 	return base, nil
 }
