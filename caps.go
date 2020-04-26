@@ -2,9 +2,9 @@ package caps
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type kind int
@@ -41,8 +41,8 @@ func (c captionText) GetContent() string {
 }
 
 type captionStyle struct {
-	content Style
-	start   bool
+	Style Style
+	Start bool
 }
 
 func (captionStyle) Kind() kind {
@@ -50,7 +50,7 @@ func (captionStyle) Kind() kind {
 }
 
 func (c captionStyle) GetContent() string {
-	return c.content.String()
+	return c.Style.String()
 }
 
 func CreateCaptionStyle(start bool, style Style) captionNode {
@@ -156,8 +156,11 @@ func (c Caption) FormatEnd() string {
 }
 
 func formatTimestamp(value int) string {
-	timestamp := time.Duration(value/1000) * time.Millisecond
-	return fmt.Sprintf("0%s", timestamp)
+	value /= 1000
+	seconds := math.Mod(float64(value)/1000, 60)
+	minutes := (value / (1000 * 60)) % 60
+	hours := (value / (1000 * 60 * 60) % 24)
+	return fmt.Sprintf("%02d:%02d:%.3f", hours, minutes, seconds)
 }
 
 type CaptionSet struct {

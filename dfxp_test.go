@@ -23,9 +23,6 @@ const sampleDFXP string = `
  </head>
  <body>
   <div xml:lang="en-US">
-   <p begin="00:00:09.209" end="00:00:12.312" style="p">
-    ( clock ticking )
-   </p>
    <p begin="00:00:14.848" end="00:00:17.000" style="p">
     MAN:<br/>
     When we think<br/>
@@ -54,7 +51,7 @@ const sampleDFXP string = `
    <p begin="00:00:34.400" end="00:00:38.400" region="bottom" style="p">some more text</p>
   </div>
  </body>
-</tt> `
+</tt>`
 
 const sampleDFXPSyntaxError = `
   <?xml version="1.0" encoding="UTF-8"?>
@@ -119,12 +116,7 @@ func TestInvalidMarkupIsProperlyHandled(t *testing.T) {
 }
 
 func TestStructToXML(t *testing.T) {
-	base := DFXPBaseMarkup{
-		TtXMLLang:  "en",
-		TtXMLns:    "http://www.w3.org/ns/ttml",
-		TtXMLnsTTS: "http://www.w3.org/ns/ttml#styling",
-	}
-
+	base := dfxpSpan{xml.Name{}, "bla blablab bla alba", dfxpStyle{TTSTextAlign: "center"}}
 	output, err := xml.MarshalIndent(base, "  ", "    ")
 	fmt.Println(err)
 	fmt.Println(string(output))
@@ -135,8 +127,7 @@ func TestDFXPWriter(t *testing.T) {
 	assert.Nil(t, err)
 	data, _ := NewDFXPWriter().Write(captionSet)
 	output, err := xml.MarshalIndent(data, "  ", "    ")
-	fmt.Println(err)
-	fmt.Println(string(output))
-	fmt.Println("--------------------------")
 	fmt.Println(sampleDFXP)
+	fmt.Println("--------------------------")
+	fmt.Println(string(output))
 }
