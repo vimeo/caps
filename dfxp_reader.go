@@ -159,15 +159,16 @@ func (r *DFXPReader) translateTag(tag *xmlquery.Node) {
 	case "p":
 		fallthrough
 	default:
-		fmt.Println(tag.Data)
-		if tag.Data == "p" || tag.Type == 3 {
+		if (tag.Data == "p" && tag.FirstChild == nil && tag.Type == 2) || tag.Type == 3 {
 			text := strings.TrimSpace(tag.InnerText())
 			if text != "" {
 				r.nodes = append(r.nodes, CreateText(text))
 			}
 		} else {
-			for _, child := range xmlquery.Find(tag, "child::*") {
+			child := tag.FirstChild
+			for child != nil {
 				r.translateTag(child)
+				child = child.NextSibling
 			}
 		}
 	}
@@ -177,16 +178,19 @@ func (r *DFXPReader) translateSpan(tag *xmlquery.Node) {
 	style := r.translateStyle(tag)
 	captionStyle := CreateCaptionStyle(true, style)
 	r.nodes = append(r.nodes, captionStyle)
-	for _, child := range xmlquery.Find(tag, "child::*") {
+	// for some reason xmlquery.Find(tag, "child::*") doesnt work here
+	child := tag.FirstChild
+	for child != nil {
 		r.translateTag(child)
+		child = child.NextSibling
 	}
-	secondStyle := CreateCaptionStyle(false, style)
-	r.nodes = append(r.nodes, secondStyle)
+	//	secondStyle := CreateCaptionStyle(false, style)
+	//	r.nodes = append(r.nodes, secondStyle)
 	//	return // <- this return was uncommented
 	// FIXME this is duped, porting as is for now
-	for _, child := range xmlquery.Find(tag, "child::*") {
-		r.translateTag(child)
-	}
+	//	for _, child := range xmlquery.Find(tag, "child::*") {
+	//r.translateTag(child)
+	//	}
 }
 
 func (r DFXPReader) translateStyle(tag *xmlquery.Node) Style {

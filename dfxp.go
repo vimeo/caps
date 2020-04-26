@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"strings"
 )
 
 type DFXPHead struct {
@@ -26,13 +27,6 @@ func dfxpDefaultRegion() dfxpRegion {
 	}
 }
 
-type pContent string
-
-func (c pContent) MarshalText() ([]byte, error) {
-	fmt.Println("MarshalText called", c)
-	return []byte(c), nil
-}
-
 type dfxpP struct {
 	XMLName xml.Name  `xml:"p"`
 	Begin   string    `xml:"begin,attr"`
@@ -48,27 +42,34 @@ func NewDFXPp(caption *Caption, s string) dfxpP {
 	start := caption.FormatStart()
 	end := caption.FormatEnd()
 	line := ""
-	hasSpan := false
-	var sp dfxpSpan
-	for _, node := range caption.Nodes {
-		if node.Kind() == text {
+	var sp *dfxpSpan
+
+	for i, node := range caption.Nodes {
+		fmt.Print(i)
+		if node.Kind() == text && sp == nil {
 			buf := bytes.Buffer{}
 			xml.Escape(&buf, []byte(node.GetContent()))
-			line += buf.String()
-		} else if node.Kind() == lineBreak {
+			str := buf.String()
+			str = strings.ReplaceAll(str, `&#39;`, `'`)
+			str = strings.ReplaceAll(str, `&#34;`, `"`)
+			str = strings.ReplaceAll(str, `&#xA;`, ``)
+			line += str
+		} else if node.Kind() == lineBreak && sp == nil {
 			line += "<br/>"
-		} else if node.Kind() == style {
+		} else if node.Kind() == style && sp == nil {
 			sp = NewDFXPspan(line, NewDFXPStyle(node.(captionStyle).Style))
-			hasSpan = true
+		} else if sp != nil {
+			// FIXME do all the strings.ReplaceAll here too
+			line += node.GetContent()
+			sp.Text += line
 		}
-		hasSpan = false
 	}
-	if hasSpan {
+	if sp != nil {
 		return dfxpP{
 			Begin:   start,
 			End:     end,
 			StyleID: s,
-			Span:    &sp,
+			Span:    sp,
 		}
 	}
 
@@ -119,8 +120,8 @@ type dfxpSpan struct {
 	dfxpStyle
 }
 
-func NewDFXPspan(s string, style dfxpStyle) dfxpSpan {
-	return dfxpSpan{xml.Name{}, s, style}
+func NewDFXPspan(s string, style dfxpStyle) *dfxpSpan {
+	return &dfxpSpan{xml.Name{}, s, style}
 }
 
 type dfxpStyle struct {
