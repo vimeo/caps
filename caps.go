@@ -146,21 +146,32 @@ func (c Caption) GetText() string {
 	}
 	return content.String()
 }
+func (c Caption) FormatStartWithSeparator(sep string) string {
+	return formatTimestamp(c.Start, sep)
+}
 
 func (c Caption) FormatStart() string {
-	return formatTimestamp(c.Start)
+	return formatTimestamp(c.Start, ".")
+}
+
+func (c Caption) FormatEndWithSeparator(sep string) string {
+	return formatTimestamp(c.End, sep)
 }
 
 func (c Caption) FormatEnd() string {
-	return formatTimestamp(c.End)
+	return formatTimestamp(c.End, ".")
 }
 
-func formatTimestamp(value int) string {
+func formatTimestamp(value int, sep string) string {
 	value /= 1000
 	seconds := math.Mod(float64(value)/1000, 60)
 	minutes := (value / (1000 * 60)) % 60
 	hours := (value / (1000 * 60 * 60) % 24)
-	return fmt.Sprintf("%02d:%02d:%.3f", hours, minutes, seconds)
+	timestamp := fmt.Sprintf("%02d:%02d:%06.3f", hours, minutes, seconds)
+	if sep != "." {
+		return strings.ReplaceAll(timestamp, ".", sep)
+	}
+	return timestamp
 }
 
 type CaptionSet struct {

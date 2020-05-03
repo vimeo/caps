@@ -46,6 +46,24 @@ func TestSRTExtraEmpty(t *testing.T) {
 	assert.Equal(t, 2, len(captions.GetCaptions("en-US")))
 }
 
+func TestSRTtoSRT(t *testing.T) {
+	type srtToSRTTests struct {
+		inputSRT string
+		wantSRT  string
+	}
+	srtConvertionTests := []srtToSRTTests{
+		{inputSRT: sampleSRT, wantSRT: sampleSRT},
+		{inputSRT: sampleSRTutf8, wantSRT: sampleSRTutf8},
+		{inputSRT: sampleSRTu, wantSRT: sampleSRTu},
+	}
+	for _, test := range srtConvertionTests {
+		captions, err := SRTReader{}.Read(test.inputSRT, "en-US")
+		assert.Nil(t, err)
+		result := SRTWriter{}.Write(captions)
+		assert.Equal(t, result, test.wantSRT)
+	}
+}
+
 const sampleSRTu = `1
 00:00:09,209 --> 00:00:12,312
 ( clock ticking )

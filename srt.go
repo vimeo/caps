@@ -146,3 +146,42 @@ func splitLines(content string) []string {
 		"\n",
 	)
 }
+
+type SRTWriter struct{}
+
+func (SRTWriter) Write(captionSet *CaptionSet) string {
+	contents := []string{}
+	for _, lang := range captionSet.GetLanguages() {
+		contents = append(contents, recreateLang(captionSet.GetCaptions(lang)))
+	}
+	return strings.Join(contents, "MULTI-LANGUAGE SRT\n")
+}
+
+func recreateLang(captions []*Caption) string {
+	//FIXME use string builder?
+	content := ""
+	count := 1
+	for _, caption := range captions {
+		content += fmt.Sprintf("%s\n", strconv.Itoa(count))
+		start := caption.FormatStartWithSeparator(",")
+		end := caption.FormatEndWithSeparator(",")
+		content += fmt.Sprintf("%s --> %s\n", start[:12], end[:12])
+		newContent := ""
+		for _, node := range caption.Nodes {
+			newContent += recreateLine(node)
+		}
+		content += fmt.Sprintf("%s\n\n", strings.ReplaceAll(newContent, "\n\n", "\n"))
+		count++
+	}
+	return content[:len(content)-1]
+}
+
+func recreateLine(node captionNode) string {
+	if node.Kind() == text {
+		return node.GetContent()
+	}
+	if node.Kind() == lineBreak {
+		return "\n"
+	}
+	return ""
+}
