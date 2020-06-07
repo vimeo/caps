@@ -57,7 +57,7 @@ func NewDFXPp(caption *Caption, s string) dfxpP {
 		} else if node.Kind() == lineBreak && sp == nil {
 			line += "<br/>"
 		} else if node.Kind() == style && sp == nil {
-			sp = NewDFXPspan(line, NewDFXPStyle(node.(captionStyle).Style))
+			sp = NewDFXPspan(line, NewDFXPStyle(node.(CaptionStyle).Style))
 		} else if sp != nil {
 			// FIXME do all the strings.ReplaceAll here too
 			line += node.GetContent()

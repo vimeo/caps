@@ -62,7 +62,7 @@ func (SRTReader) Read(content string, lang string) (*CaptionSet, error) {
 				return nil, err
 			}
 		}
-		capNodes := []captionNode{}
+		capNodes := []CaptionNode{}
 		for _, line := range lines[startLine+2 : endLine-1] {
 			cleanLine := reFont.ReplaceAllString(line, "")
 			cleanLine = reEndFont.ReplaceAllString(cleanLine, "")
@@ -176,7 +176,7 @@ func recreateLang(captions []*Caption) string {
 	return content[:len(content)-1]
 }
 
-func recreateLine(node captionNode) string {
+func recreateLine(node CaptionNode) string {
 	if node.Kind() == text {
 		return node.GetContent()
 	}

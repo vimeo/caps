@@ -15,7 +15,7 @@ type DFXPReader struct {
 	framerate  string
 	multiplier []int
 	timebase   string
-	nodes      []captionNode
+	nodes      []CaptionNode
 }
 
 func NewDFXPReader() *DFXPReader {
@@ -23,7 +23,7 @@ func NewDFXPReader() *DFXPReader {
 		framerate:  "30",
 		multiplier: []int{1, 1},
 		timebase:   "media",
-		nodes:      []captionNode{},
+		nodes:      []CaptionNode{},
 	}
 }
 
@@ -131,7 +131,7 @@ func (r *DFXPReader) translatePtag(pTag *xmlquery.Node) (*Caption, error) {
 	if err != nil {
 		return nil, err
 	}
-	r.nodes = []captionNode{}
+	r.nodes = []CaptionNode{}
 
 	brs := xmlquery.Find(pTag, "//br")
 	if len(brs) == 0 {

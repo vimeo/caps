@@ -148,7 +148,7 @@ func TestCaptionNodes(t *testing.T) {
 	}
 
 	type nodeTest struct {
-		kind    kind
+		kind    Kind
 		content string
 	}
 

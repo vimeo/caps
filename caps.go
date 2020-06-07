@@ -7,59 +7,59 @@ import (
 	"strings"
 )
 
-type kind int
+type Kind int
 
 const (
-	text kind = iota
+	text Kind = iota
 	style
 	lineBreak
 )
 
-type captionNode interface {
-	Kind() kind
+type CaptionNode interface {
+	Kind() Kind
 	GetContent() string
 }
 
-type captionText struct {
+type CaptionText struct {
 	content string
 }
 
-func CreateText(text string) captionNode {
-	return captionText{text}
+func CreateText(text string) CaptionNode {
+	return CaptionText{text}
 }
 
-func CreateBreak() captionNode {
+func CreateBreak() CaptionNode {
 	return captionBreak{}
 }
 
-func (captionText) Kind() kind {
+func (CaptionText) Kind() Kind {
 	return text
 }
 
-func (c captionText) GetContent() string {
+func (c CaptionText) GetContent() string {
 	return c.content
 }
 
-type captionStyle struct {
+type CaptionStyle struct {
 	Style Style
 	Start bool
 }
 
-func (captionStyle) Kind() kind {
+func (CaptionStyle) Kind() Kind {
 	return style
 }
 
-func (c captionStyle) GetContent() string {
+func (c CaptionStyle) GetContent() string {
 	return c.Style.String()
 }
 
-func CreateCaptionStyle(start bool, style Style) captionNode {
-	return captionStyle{style, start}
+func CreateCaptionStyle(start bool, style Style) CaptionNode {
+	return CaptionStyle{style, start}
 }
 
 type captionBreak struct{}
 
-func (captionBreak) Kind() kind {
+func (captionBreak) Kind() Kind {
 	return lineBreak
 }
 
@@ -70,7 +70,7 @@ func (c captionBreak) GetContent() string {
 type Caption struct {
 	Start int
 	End   int
-	Nodes []captionNode
+	Nodes []CaptionNode
 	Style Style
 }
 
@@ -116,7 +116,7 @@ func DefaultStyle() Style {
 	return Style{Color: "white", FontFamily: "monospace", FontSize: "1c"}
 }
 
-func NewCaption(start, end int, nodes []captionNode, style Style) Caption {
+func NewCaption(start, end int, nodes []CaptionNode, style Style) Caption {
 	return Caption{
 		start,
 		end,
@@ -129,7 +129,7 @@ func DefaultCaption() Caption {
 	return Caption{
 		Start: 0,
 		End:   0,
-		Nodes: []captionNode{},
+		Nodes: []CaptionNode{},
 	}
 }
 
