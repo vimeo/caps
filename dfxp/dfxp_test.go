@@ -1,4 +1,4 @@
-package caps
+package dfxp
 
 import (
 	"encoding/xml"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/thiagopnts/caps"
 	"github.com/yosssi/gohtml"
 )
 
@@ -91,23 +92,23 @@ const sampleDFXPEmpty = `
 `
 
 func TestDection(t *testing.T) {
-	assert.True(t, NewDFXPReader().Detect(sampleDFXP))
+	assert.True(t, NewReader().Detect(sampleDFXP))
 }
 
 func TestCaptionLength(t *testing.T) {
-	captionSet, err := NewDFXPReader().Read(sampleDFXP)
+	captionSet, err := NewReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 	assert.Equal(t, 7, len(captionSet.GetCaptions("en-US")))
 }
 
 func TestEmptyFile(t *testing.T) {
-	set, err := NewDFXPReader().Read(sampleDFXPEmpty)
+	set, err := NewReader().Read(sampleDFXPEmpty)
 	assert.NotNil(t, err)
 	assert.True(t, set.IsEmpty())
 }
 
 func TestProperTimestamps(t *testing.T) {
-	captionSet, err := NewDFXPReader().Read(sampleDFXP)
+	captionSet, err := NewReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 
 	paragraph := captionSet.GetCaptions("en-US")[2]
@@ -116,13 +117,13 @@ func TestProperTimestamps(t *testing.T) {
 }
 
 func TestInvalidMarkupIsProperlyHandled(t *testing.T) {
-	captionSet, err := NewDFXPReader().Read(sampleDFXPSyntaxError)
+	captionSet, err := NewReader().Read(sampleDFXPSyntaxError)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(captionSet.GetCaptions("en-US")))
 }
 
 func TestCaptionNodes(t *testing.T) {
-	captionSet, err := NewDFXPReader().Read(sampleDFXP)
+	captionSet, err := NewReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 	styles := captionSet.GetStyles()
 	assert.Equal(t, 1, len(styles))
@@ -148,20 +149,20 @@ func TestCaptionNodes(t *testing.T) {
 	}
 
 	type nodeTest struct {
-		kind    Kind
+		kind    caps.Kind
 		content string
 	}
 
 	nodeTests := [][]nodeTest{
 		[]nodeTest{
-			{kind: Text, content: "MAN:"},
-			{kind: LineBreak, content: "\n"},
-			{kind: Text, content: "When we think"},
-			{kind: LineBreak, content: "\n"},
-			{kind: Text, content: "♪ ...say bow, wow, ♪"},
+			{kind: caps.Text, content: "MAN:"},
+			{kind: caps.LineBreak, content: "\n"},
+			{kind: caps.Text, content: "When we think"},
+			{kind: caps.LineBreak, content: "\n"},
+			{kind: caps.Text, content: "♪ ...say bow, wow, ♪"},
 		},
 		[]nodeTest{
-			{kind: CapStyle, content: `
+			{kind: caps.CapStyle, content: `
 	class: \n
 	text-align: right\n
 	font-family: \n
@@ -172,31 +173,31 @@ func TestCaptionNodes(t *testing.T) {
 	underline: false\n
 	`,
 			},
-			{kind: Text, content: "we have this vision of Einstein"},
+			{kind: caps.Text, content: "we have this vision of Einstein"},
 		},
 		[]nodeTest{
-			{kind: LineBreak, content: "\n"},
-			{kind: Text, content: "as an old, wrinkly man"},
-			{kind: LineBreak, content: "\n"},
-			{kind: Text, content: "with white hair."},
+			{kind: caps.LineBreak, content: "\n"},
+			{kind: caps.Text, content: "as an old, wrinkly man"},
+			{kind: caps.LineBreak, content: "\n"},
+			{kind: caps.Text, content: "with white hair."},
 		},
 		[]nodeTest{
-			{kind: Text, content: "MAN 2:"},
-			{kind: LineBreak, content: "\n"},
-			{kind: Text, content: "E equals m c-squared is"},
-			{kind: LineBreak, content: "\n"},
-			{kind: Text, content: "not about an old Einstein."},
+			{kind: caps.Text, content: "MAN 2:"},
+			{kind: caps.LineBreak, content: "\n"},
+			{kind: caps.Text, content: "E equals m c-squared is"},
+			{kind: caps.LineBreak, content: "\n"},
+			{kind: caps.Text, content: "not about an old Einstein."},
 		},
 		[]nodeTest{
-			{kind: Text, content: "MAN 2:"},
-			{kind: LineBreak, content: "\n"},
-			{kind: Text, content: "It's all about an eternal Einstein.  pois é"},
+			{kind: caps.Text, content: "MAN 2:"},
+			{kind: caps.LineBreak, content: "\n"},
+			{kind: caps.Text, content: "It's all about an eternal Einstein.  pois é"},
 		},
 		[]nodeTest{
-			{kind: Text, content: "<LAUGHING & WHOOPS!>"},
+			{kind: caps.Text, content: "<LAUGHING & WHOOPS!>"},
 		},
 		[]nodeTest{
-			{kind: Text, content: "some more text"},
+			{kind: caps.Text, content: "some more text"},
 		},
 	}
 
@@ -213,18 +214,18 @@ func TestCaptionNodes(t *testing.T) {
 }
 
 func TestStructToXML(t *testing.T) {
-	base := dfxpSpan{xml.Name{}, "bla blablab bla alba", dfxpStyle{TTSTextAlign: "center"}}
+	base := Span{xml.Name{}, "bla blablab bla alba", Style{TTSTextAlign: "center"}}
 	output, err := xml.MarshalIndent(base, "  ", "    ")
 	fmt.Println(err)
 	fmt.Println(string(output))
 }
 
 func TestDFXPWriter(t *testing.T) {
-	captionSet, err := NewDFXPReader().Read(sampleDFXP)
+	captionSet, err := NewReader().Read(sampleDFXP)
 	assert.Nil(t, err)
-	data, _ := NewDFXPWriter().Write(captionSet)
+	data, _ := NewWriter().Write(captionSet)
 	output, err := xml.MarshalIndent(data, "  ", "    ")
-	fmt.Println(sampleDFXP)
+	fmt.Println(sampleDFXP[0])
 	fmt.Println("--------------------------")
-	fmt.Println(string(output))
+	fmt.Println(gohtml.Format(string(output[0])))
 }

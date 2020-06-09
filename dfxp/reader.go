@@ -1,42 +1,43 @@
-package caps
+package dfxp
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
+	"github.com/thiagopnts/caps"
 )
 
 const defaultLanguageCode = "en-US"
 
-type DFXPReader struct {
+// TODO implement io.Reader interface?
+type Reader struct {
 	framerate  string
 	multiplier []int
 	timebase   string
-	nodes      []CaptionNode
+	nodes      []caps.CaptionNode
 }
 
-func NewDFXPReader() *DFXPReader {
-	return &DFXPReader{
+func NewReader() *Reader {
+	return &Reader{
 		framerate:  "30",
 		multiplier: []int{1, 1},
 		timebase:   "media",
-		nodes:      []CaptionNode{},
+		nodes:      []caps.CaptionNode{},
 	}
 }
 
-func (DFXPReader) Detect(content string) bool {
+func (Reader) Detect(content string) bool {
 	return strings.Contains(strings.ToLower(content), "</tt>")
 }
 
-func (r DFXPReader) Read(content string) (*CaptionSet, error) {
+func (r Reader) Read(content string) (*caps.CaptionSet, error) {
 	doc, err := xmlquery.Parse(strings.NewReader(content))
 	if err != nil {
 		return nil, err
 	}
-	captions := NewCaptionSet()
+	captions := caps.NewCaptionSet()
 	tts := xmlquery.Find(doc, "/tt")
 	if len(tts) >= 1 {
 		tt := tts[0]
@@ -56,11 +57,11 @@ func (r DFXPReader) Read(content string) (*CaptionSet, error) {
 			multipliers := strings.Split(multiplier, " ")
 			a, err := strconv.Atoi(multipliers[0])
 			if err != nil {
-				log.Fatalln("failed to read multiplier")
+				return nil, fmt.Errorf("failed to read multiplier: %w", err)
 			}
 			b, err := strconv.Atoi(multipliers[1])
 			if err != nil {
-				log.Fatalln("failed to read multiplier")
+				return nil, fmt.Errorf("failed to read multiplier: %w", err)
 			}
 			r.multiplier = []int{a, b}
 		} else {
@@ -92,7 +93,7 @@ func (r DFXPReader) Read(content string) (*CaptionSet, error) {
 	return captions, nil
 }
 
-func (r DFXPReader) combineMatchingCaptions(captionSet *CaptionSet) *CaptionSet {
+func (r Reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.CaptionSet {
 	for _, lang := range captionSet.GetLanguages() {
 		captions := captionSet.GetCaptions(lang)
 		if len(captions) <= 1 {
@@ -103,7 +104,7 @@ func (r DFXPReader) combineMatchingCaptions(captionSet *CaptionSet) *CaptionSet 
 		for _, caption := range captions[1:] {
 			lastIndex := len(newCaps) - 1
 			if caption.Start == newCaps[lastIndex].Start && caption.End == newCaps[lastIndex].End {
-				newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, CreateBreak())
+				newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, caps.CreateBreak())
 				for _, node := range caption.Nodes {
 					newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, node)
 				}
@@ -116,8 +117,8 @@ func (r DFXPReader) combineMatchingCaptions(captionSet *CaptionSet) *CaptionSet 
 	return captionSet
 }
 
-func (r DFXPReader) translateDiv(div *xmlquery.Node) []*Caption {
-	captions := []*Caption{}
+func (r Reader) translateDiv(div *xmlquery.Node) []*caps.Caption {
+	captions := []*caps.Caption{}
 	for _, pTag := range xmlquery.Find(div, "//p") {
 		if c, err := r.translatePtag(pTag); err == nil {
 			captions = append(captions, c)
@@ -126,12 +127,12 @@ func (r DFXPReader) translateDiv(div *xmlquery.Node) []*Caption {
 	return captions
 }
 
-func (r *DFXPReader) translatePtag(pTag *xmlquery.Node) (*Caption, error) {
+func (r *Reader) translatePtag(pTag *xmlquery.Node) (*caps.Caption, error) {
 	start, end, err := r.findTimes(pTag)
 	if err != nil {
 		return nil, err
 	}
-	r.nodes = []CaptionNode{}
+	r.nodes = []caps.CaptionNode{}
 
 	brs := xmlquery.Find(pTag, "//br")
 	if len(brs) == 0 {
@@ -146,14 +147,14 @@ func (r *DFXPReader) translatePtag(pTag *xmlquery.Node) (*Caption, error) {
 	}
 
 	styles := r.translateStyle(pTag)
-	caption := NewCaption(start, end, r.nodes, styles)
+	caption := caps.NewCaption(start, end, r.nodes, styles)
 	return &caption, nil
 }
 
-func (r *DFXPReader) translateTag(tag *xmlquery.Node) {
+func (r *Reader) translateTag(tag *xmlquery.Node) {
 	switch tag.Data {
 	case "br":
-		r.nodes = append(r.nodes, CreateBreak())
+		r.nodes = append(r.nodes, caps.CreateBreak())
 	case "span":
 		r.translateSpan(tag)
 	case "p":
@@ -162,7 +163,7 @@ func (r *DFXPReader) translateTag(tag *xmlquery.Node) {
 		if (tag.Data == "p" && tag.FirstChild == nil && tag.Type == 2) || tag.Type == 3 {
 			text := strings.TrimSpace(tag.InnerText())
 			if text != "" {
-				r.nodes = append(r.nodes, CreateText(text))
+				r.nodes = append(r.nodes, caps.CreateText(text))
 			}
 		} else {
 			child := tag.FirstChild
@@ -174,9 +175,9 @@ func (r *DFXPReader) translateTag(tag *xmlquery.Node) {
 	}
 }
 
-func (r *DFXPReader) translateSpan(tag *xmlquery.Node) {
+func (r *Reader) translateSpan(tag *xmlquery.Node) {
 	style := r.translateStyle(tag)
-	captionStyle := CreateCaptionStyle(true, style)
+	captionStyle := caps.CreateCaptionStyle(true, style)
 	r.nodes = append(r.nodes, captionStyle)
 	// for some reason xmlquery.Find(tag, "child::*") doesnt work here
 	child := tag.FirstChild
@@ -193,8 +194,8 @@ func (r *DFXPReader) translateSpan(tag *xmlquery.Node) {
 	//	}
 }
 
-func (r DFXPReader) translateStyle(tag *xmlquery.Node) Style {
-	style := Style{}
+func (r Reader) translateStyle(tag *xmlquery.Node) caps.Style {
+	style := caps.Style{}
 	for _, attr := range tag.Attr {
 		switch strings.ToLower(attr.Name.Local) {
 		case "style":
@@ -218,7 +219,7 @@ func (r DFXPReader) translateStyle(tag *xmlquery.Node) Style {
 	return style
 }
 
-func (r DFXPReader) findTimes(root *xmlquery.Node) (int, int, error) {
+func (r Reader) findTimes(root *xmlquery.Node) (int, int, error) {
 	begin := root.SelectAttr("begin")
 	if begin == "" {
 		return 0, 0, fmt.Errorf("tag doesnt have a time begin")
@@ -244,7 +245,7 @@ func (r DFXPReader) findTimes(root *xmlquery.Node) (int, int, error) {
 	return start, end, nil
 }
 
-func (r DFXPReader) translateTime(stamp string) (int, error) {
+func (r Reader) translateTime(stamp string) (int, error) {
 	timesplit := strings.Split(stamp, ":")
 	if !strings.Contains(timesplit[2], ".") {
 		timesplit[2] = timesplit[2] + ".000"
