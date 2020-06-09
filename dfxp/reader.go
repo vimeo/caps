@@ -120,25 +120,24 @@ func (r Reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.Capti
 func (r Reader) translateDiv(div *xmlquery.Node) []*caps.Caption {
 	captions := []*caps.Caption{}
 	for _, pTag := range xmlquery.Find(div, "//p") {
-		if c, err := r.translatePtag(pTag); err == nil {
+		fmt.Println(pTag.Parent.Data)
+		if start, end, err := r.findTimes(div); err == nil {
+			captions = append(captions, r.translateParentTimedParagraph(pTag, start, end))
+		} else if c, err := r.translatePtag(pTag); err == nil {
 			captions = append(captions, c)
 		}
 	}
 	return captions
 }
 
-func (r *Reader) translatePtag(pTag *xmlquery.Node) (*caps.Caption, error) {
-	start, end, err := r.findTimes(pTag)
-	if err != nil {
-		return nil, err
-	}
+func (r *Reader) translateParentTimedParagraph(paragraph *xmlquery.Node, start, end int) *caps.Caption {
 	r.nodes = []caps.CaptionNode{}
 
-	brs := xmlquery.Find(pTag, "//br")
+	brs := xmlquery.Find(paragraph, "//br")
 	if len(brs) == 0 {
-		r.translateTag(pTag)
+		r.translateTag(paragraph)
 	} else {
-		child := pTag.FirstChild
+		child := paragraph.FirstChild
 
 		for child != nil {
 			r.translateTag(child)
@@ -146,9 +145,18 @@ func (r *Reader) translatePtag(pTag *xmlquery.Node) (*caps.Caption, error) {
 		}
 	}
 
-	styles := r.translateStyle(pTag)
+	styles := r.translateStyle(paragraph)
 	caption := caps.NewCaption(start, end, r.nodes, styles)
-	return &caption, nil
+	return &caption
+}
+
+func (r *Reader) translatePtag(paragraph *xmlquery.Node) (*caps.Caption, error) {
+	start, end, err := r.findTimes(paragraph)
+	if err != nil {
+		return nil, err
+	}
+	captions := r.translateParentTimedParagraph(paragraph, start, end)
+	return captions, nil
 }
 
 func (r *Reader) translateTag(tag *xmlquery.Node) {
