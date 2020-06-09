@@ -46,7 +46,7 @@ func NewDFXPp(caption *Caption, s string) dfxpP {
 
 	for i, node := range caption.Nodes {
 		fmt.Print(i)
-		if node.Kind() == text && sp == nil {
+		if node.Kind() == Text && sp == nil {
 			buf := bytes.Buffer{}
 			xml.Escape(&buf, []byte(node.GetContent()))
 			str := buf.String()
@@ -54,9 +54,9 @@ func NewDFXPp(caption *Caption, s string) dfxpP {
 			str = strings.ReplaceAll(str, `&#34;`, `"`)
 			str = strings.ReplaceAll(str, `&#xA;`, ``)
 			line += str
-		} else if node.Kind() == lineBreak && sp == nil {
+		} else if node.Kind() == LineBreak && sp == nil {
 			line += "<br/>"
-		} else if node.Kind() == style && sp == nil {
+		} else if node.Kind() == CapStyle && sp == nil {
 			sp = NewDFXPspan(line, NewDFXPStyle(node.(CaptionStyle).Style))
 		} else if sp != nil {
 			// FIXME do all the strings.ReplaceAll here too

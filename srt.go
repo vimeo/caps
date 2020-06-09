@@ -177,10 +177,10 @@ func recreateLang(captions []*Caption) string {
 }
 
 func recreateLine(node CaptionNode) string {
-	if node.Kind() == text {
+	if node.Kind() == Text {
 		return node.GetContent()
 	}
-	if node.Kind() == lineBreak {
+	if node.Kind() == LineBreak {
 		return "\n"
 	}
 	return ""

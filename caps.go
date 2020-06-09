@@ -10,9 +10,9 @@ import (
 type Kind int
 
 const (
-	text Kind = iota
-	style
-	lineBreak
+	Text Kind = iota
+	CapStyle
+	LineBreak
 )
 
 type CaptionNode interface {
@@ -33,7 +33,7 @@ func CreateBreak() CaptionNode {
 }
 
 func (CaptionText) Kind() Kind {
-	return text
+	return Text
 }
 
 func (c CaptionText) GetContent() string {
@@ -46,7 +46,7 @@ type CaptionStyle struct {
 }
 
 func (CaptionStyle) Kind() Kind {
-	return style
+	return CapStyle
 }
 
 func (c CaptionStyle) GetContent() string {
@@ -60,7 +60,7 @@ func CreateCaptionStyle(start bool, style Style) CaptionNode {
 type captionBreak struct{}
 
 func (captionBreak) Kind() Kind {
-	return lineBreak
+	return LineBreak
 }
 
 func (c captionBreak) GetContent() string {
@@ -140,7 +140,7 @@ func (c Caption) IsEmpty() bool {
 func (c Caption) GetText() string {
 	var content strings.Builder
 	for _, node := range c.Nodes {
-		if node.Kind() != style {
+		if node.Kind() != CapStyle {
 			content.WriteString(node.GetContent())
 		}
 	}

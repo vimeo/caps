@@ -154,14 +154,14 @@ func TestCaptionNodes(t *testing.T) {
 
 	nodeTests := [][]nodeTest{
 		[]nodeTest{
-			{kind: text, content: "MAN:"},
-			{kind: lineBreak, content: "\n"},
-			{kind: text, content: "When we think"},
-			{kind: lineBreak, content: "\n"},
-			{kind: text, content: "♪ ...say bow, wow, ♪"},
+			{kind: Text, content: "MAN:"},
+			{kind: LineBreak, content: "\n"},
+			{kind: Text, content: "When we think"},
+			{kind: LineBreak, content: "\n"},
+			{kind: Text, content: "♪ ...say bow, wow, ♪"},
 		},
 		[]nodeTest{
-			{kind: style, content: `
+			{kind: CapStyle, content: `
 	class: \n
 	text-align: right\n
 	font-family: \n
@@ -172,31 +172,31 @@ func TestCaptionNodes(t *testing.T) {
 	underline: false\n
 	`,
 			},
-			{kind: text, content: "we have this vision of Einstein"},
+			{kind: Text, content: "we have this vision of Einstein"},
 		},
 		[]nodeTest{
-			{kind: lineBreak, content: "\n"},
-			{kind: text, content: "as an old, wrinkly man"},
-			{kind: lineBreak, content: "\n"},
-			{kind: text, content: "with white hair."},
+			{kind: LineBreak, content: "\n"},
+			{kind: Text, content: "as an old, wrinkly man"},
+			{kind: LineBreak, content: "\n"},
+			{kind: Text, content: "with white hair."},
 		},
 		[]nodeTest{
-			{kind: text, content: "MAN 2:"},
-			{kind: lineBreak, content: "\n"},
-			{kind: text, content: "E equals m c-squared is"},
-			{kind: lineBreak, content: "\n"},
-			{kind: text, content: "not about an old Einstein."},
+			{kind: Text, content: "MAN 2:"},
+			{kind: LineBreak, content: "\n"},
+			{kind: Text, content: "E equals m c-squared is"},
+			{kind: LineBreak, content: "\n"},
+			{kind: Text, content: "not about an old Einstein."},
 		},
 		[]nodeTest{
-			{kind: text, content: "MAN 2:"},
-			{kind: lineBreak, content: "\n"},
-			{kind: text, content: "It's all about an eternal Einstein.  pois é"},
+			{kind: Text, content: "MAN 2:"},
+			{kind: LineBreak, content: "\n"},
+			{kind: Text, content: "It's all about an eternal Einstein.  pois é"},
 		},
 		[]nodeTest{
-			{kind: text, content: "<LAUGHING & WHOOPS!>"},
+			{kind: Text, content: "<LAUGHING & WHOOPS!>"},
 		},
 		[]nodeTest{
-			{kind: text, content: "some more text"},
+			{kind: Text, content: "some more text"},
 		},
 	}
 
