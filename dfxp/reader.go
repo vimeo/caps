@@ -11,28 +11,26 @@ import (
 
 const defaultLanguageCode = "en-US"
 
-// TODO implement io.Reader interface?
 type Reader struct {
 	framerate  string
 	multiplier []int
 	timebase   string
-	nodes      []caps.CaptionNode
+	nodes      []caps.CaptionContent
 }
 
-func NewReader() *Reader {
-	return &Reader{
-		framerate:  "30",
-		multiplier: []int{1, 1},
-		timebase:   "media",
-		nodes:      []caps.CaptionNode{},
-	}
-}
-
-func (Reader) Detect(content string) bool {
+func (Reader) DetectString(content string) bool {
 	return strings.Contains(strings.ToLower(content), "</tt>")
 }
 
-func (r Reader) Read(content string) (*caps.CaptionSet, error) {
+func (r Reader) Detect(content []byte) bool {
+	return r.DetectString(string(content))
+}
+
+func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
+	return r.ReadString(string(content))
+}
+
+func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
 	doc, err := xmlquery.Parse(strings.NewReader(content))
 	if err != nil {
 		return nil, err
@@ -104,7 +102,7 @@ func (r Reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.Capti
 		for _, caption := range captions[1:] {
 			lastIndex := len(newCaps) - 1
 			if caption.Start == newCaps[lastIndex].Start && caption.End == newCaps[lastIndex].End {
-				newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, caps.CreateBreak())
+				newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, caps.NewLineBreak())
 				for _, node := range caption.Nodes {
 					newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, node)
 				}
@@ -131,7 +129,7 @@ func (r Reader) translateDiv(div *xmlquery.Node) []*caps.Caption {
 }
 
 func (r *Reader) translateParentTimedParagraph(paragraph *xmlquery.Node, start, end int) *caps.Caption {
-	r.nodes = []caps.CaptionNode{}
+	r.nodes = []caps.CaptionContent{}
 
 	brs := xmlquery.Find(paragraph, "//br")
 	if len(brs) == 0 {
@@ -162,7 +160,7 @@ func (r *Reader) translatePtag(paragraph *xmlquery.Node) (*caps.Caption, error) 
 func (r *Reader) translateTag(tag *xmlquery.Node) {
 	switch tag.Data {
 	case "br":
-		r.nodes = append(r.nodes, caps.CreateBreak())
+		r.nodes = append(r.nodes, caps.NewLineBreak())
 	case "span":
 		r.translateSpan(tag)
 	case "p":
@@ -171,7 +169,7 @@ func (r *Reader) translateTag(tag *xmlquery.Node) {
 		if (tag.Data == "p" && tag.FirstChild == nil && tag.Type == 2) || tag.Type == 3 {
 			text := strings.TrimSpace(tag.InnerText())
 			if text != "" {
-				r.nodes = append(r.nodes, caps.CreateText(text))
+				r.nodes = append(r.nodes, caps.NewCaptionText(text))
 			}
 		} else {
 			child := tag.FirstChild
@@ -185,7 +183,7 @@ func (r *Reader) translateTag(tag *xmlquery.Node) {
 
 func (r *Reader) translateSpan(tag *xmlquery.Node) {
 	style := r.translateStyle(tag)
-	captionStyle := caps.CreateCaptionStyle(true, style)
+	captionStyle := caps.NewCaptionStyle(true, style)
 	r.nodes = append(r.nodes, captionStyle)
 	// for some reason xmlquery.Find(tag, "child::*") doesnt work here
 	child := tag.FirstChild
@@ -202,8 +200,8 @@ func (r *Reader) translateSpan(tag *xmlquery.Node) {
 	//	}
 }
 
-func (r Reader) translateStyle(tag *xmlquery.Node) caps.Style {
-	style := caps.Style{}
+func (r Reader) translateStyle(tag *xmlquery.Node) caps.StyleProps {
+	style := caps.StyleProps{}
 	for _, attr := range tag.Attr {
 		switch strings.ToLower(attr.Name.Local) {
 		case "style":

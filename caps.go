@@ -2,12 +2,12 @@ package caps
 
 import (
 	"fmt"
-	"math"
 	"strconv"
-	"strings"
 )
 
 type Kind int
+
+const DefaultLang = "en-US"
 
 const (
 	Text Kind = iota
@@ -15,25 +15,50 @@ const (
 	LineBreak
 )
 
-type CaptionNode interface {
-	Kind() Kind
+type CaptionReader interface {
+	Read([]byte) (*CaptionSet, error)
+	ReadString(string) (*CaptionSet, error)
+	Detect([]byte) bool
+	DetectString(string) bool
+}
+
+type CaptionWriter interface {
+	WriteString(*CaptionSet) (string, error)
+	Write(*CaptionSet) ([]byte, error)
+}
+
+type CaptionContent interface {
+	IsText() bool
+	IsStyle() bool
+	IsLineBreak() bool
 	GetContent() string
+}
+
+type isNot struct{}
+
+func (isNot) IsText() bool {
+	return false
+}
+
+func (isNot) IsLineBreak() bool {
+	return false
+}
+
+func (isNot) IsStyle() bool {
+	return false
 }
 
 type CaptionText struct {
 	content string
+	isNot
 }
 
-func CreateText(text string) CaptionNode {
-	return CaptionText{text}
+func (CaptionText) IsText() bool {
+	return true
 }
 
-func CreateBreak() CaptionNode {
-	return captionBreak{}
-}
-
-func (CaptionText) Kind() Kind {
-	return Text
+func NewCaptionText(text string) CaptionContent {
+	return CaptionText{text, isNot{}}
 }
 
 func (c CaptionText) GetContent() string {
@@ -41,44 +66,42 @@ func (c CaptionText) GetContent() string {
 }
 
 type CaptionStyle struct {
-	Style Style
+	Style StyleProps
 	Start bool
+	isNot
 }
 
-func (CaptionStyle) Kind() Kind {
-	return CapStyle
+func (c CaptionStyle) IsStyle() bool {
+	return true
 }
 
 func (c CaptionStyle) GetContent() string {
 	return c.Style.String()
 }
 
-func CreateCaptionStyle(start bool, style Style) CaptionNode {
-	return CaptionStyle{style, start}
+func NewCaptionStyle(start bool, style StyleProps) CaptionContent {
+	return CaptionStyle{style, start, isNot{}}
 }
 
-type captionBreak struct{}
+type CaptionLineBreak struct{ isNot }
 
-func (captionBreak) Kind() Kind {
-	return LineBreak
+func (c CaptionLineBreak) IsLineBreak() bool {
+	return true
 }
 
-func (c captionBreak) GetContent() string {
+func (c CaptionLineBreak) GetContent() string {
 	return "\n"
 }
 
-type Caption struct {
-	Start int
-	End   int
-	Nodes []CaptionNode
-	Style Style
+func NewLineBreak() CaptionContent {
+	return CaptionLineBreak{isNot{}}
 }
 
 const defaultStyleID = "default"
 
 // FIXME This is a simple placeholder for style types, this can be better represented
-// but I need to implement more caption types first(this was written with just the dfxp)
-type Style struct {
+// but I need to implement more caption types first(this was written with just dfxp)
+type StyleProps struct {
 	ID         string
 	Class      string
 	TextAlign  string
@@ -90,7 +113,7 @@ type Style struct {
 	Underline  bool
 }
 
-func (s Style) String() string {
+func (s StyleProps) String() string {
 	return fmt.Sprintf(`
 	class: %s\n
 	text-align: %s\n
@@ -112,76 +135,18 @@ func (s Style) String() string {
 	)
 }
 
-func DefaultStyle() Style {
-	return Style{Color: "white", FontFamily: "monospace", FontSize: "1c"}
-}
-
-func NewCaption(start, end int, nodes []CaptionNode, style Style) Caption {
-	return Caption{
-		start,
-		end,
-		nodes,
-		style,
-	}
-}
-
-func DefaultCaption() Caption {
-	return Caption{
-		Start: 0,
-		End:   0,
-		Nodes: []CaptionNode{},
-	}
-}
-
-func (c Caption) IsEmpty() bool {
-	return len(c.Nodes) == 0
-}
-
-func (c Caption) GetText() string {
-	var content strings.Builder
-	for _, node := range c.Nodes {
-		if node.Kind() != CapStyle {
-			content.WriteString(node.GetContent())
-		}
-	}
-	return content.String()
-}
-func (c Caption) FormatStartWithSeparator(sep string) string {
-	return formatTimestamp(c.Start, sep)
-}
-
-func (c Caption) FormatStart() string {
-	return formatTimestamp(c.Start, ".")
-}
-
-func (c Caption) FormatEndWithSeparator(sep string) string {
-	return formatTimestamp(c.End, sep)
-}
-
-func (c Caption) FormatEnd() string {
-	return formatTimestamp(c.End, ".")
-}
-
-func formatTimestamp(value int, sep string) string {
-	value /= 1000
-	seconds := math.Mod(float64(value)/1000, 60)
-	minutes := (value / (1000 * 60)) % 60
-	hours := (value / (1000 * 60 * 60) % 24)
-	timestamp := fmt.Sprintf("%02d:%02d:%06.3f", hours, minutes, seconds)
-	if sep != "." {
-		return strings.ReplaceAll(timestamp, ".", sep)
-	}
-	return timestamp
+func DefaultStyleProps() StyleProps {
+	return StyleProps{Color: "white", FontFamily: "monospace", FontSize: "1c"}
 }
 
 type CaptionSet struct {
-	Styles   map[string]Style
+	Styles   map[string]StyleProps
 	Captions map[string][]*Caption
 }
 
 func NewCaptionSet() *CaptionSet {
 	return &CaptionSet{
-		Styles:   map[string]Style{},
+		Styles:   map[string]StyleProps{},
 		Captions: map[string][]*Caption{},
 	}
 }
@@ -215,19 +180,19 @@ func (c CaptionSet) GetCaptions(lang string) []*Caption {
 	return captions
 }
 
-func (c CaptionSet) AddStyle(style Style) {
+func (c CaptionSet) AddStyle(style StyleProps) {
 	c.Styles[style.ID] = style
 }
 
-func (c CaptionSet) GetStyle(id string) Style {
+func (c CaptionSet) GetStyle(id string) StyleProps {
 	if style, ok := c.Styles[id]; ok {
 		return style
 	}
-	return DefaultStyle()
+	return DefaultStyleProps()
 }
 
-func (c CaptionSet) GetStyles() []Style {
-	values := []Style{}
+func (c CaptionSet) GetStyles() []StyleProps {
+	values := []StyleProps{}
 	for _, v := range c.Styles {
 		values = append(values, v)
 	}

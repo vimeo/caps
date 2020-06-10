@@ -8,6 +8,22 @@ import (
 	"github.com/thiagopnts/caps"
 )
 
+func NewReader() caps.CaptionReader {
+	return &Reader{
+		framerate:  "30",
+		multiplier: []int{1, 1},
+		timebase:   "media",
+		nodes:      []caps.CaptionContent{},
+	}
+}
+
+func NewWriter() caps.CaptionWriter {
+	return Writer{
+		false,
+		false,
+	}
+}
+
 type Head struct {
 	Style  Style  `xml:"styling>style"`
 	Layout Region `xml:"layout>region"`
@@ -46,7 +62,7 @@ func NewParagraph(caption *caps.Caption, s string) Paragraph {
 	var sp *Span
 
 	for _, node := range caption.Nodes {
-		if node.Kind() == caps.Text && sp == nil {
+		if node.IsText() && sp == nil {
 			buf := bytes.Buffer{}
 			xml.Escape(&buf, []byte(node.GetContent()))
 			str := buf.String()
@@ -54,9 +70,9 @@ func NewParagraph(caption *caps.Caption, s string) Paragraph {
 			str = strings.ReplaceAll(str, `&#34;`, `"`)
 			str = strings.ReplaceAll(str, `&#xA;`, ``)
 			line += str
-		} else if node.Kind() == caps.LineBreak && sp == nil {
+		} else if node.IsLineBreak() && sp == nil {
 			line += "<br/>"
-		} else if node.Kind() == caps.CapStyle && sp == nil {
+		} else if node.IsStyle() && sp == nil {
 			sp = NewSpan(line, NewStyle(node.(caps.CaptionStyle).Style))
 		} else if sp != nil {
 			// FIXME do all the strings.ReplaceAll here too
@@ -141,7 +157,7 @@ func DefaultStyle() Style {
 	}
 }
 
-func NewStyle(style caps.Style) Style {
+func NewStyle(style caps.StyleProps) Style {
 	fontStyle := ""
 	if style.Italics {
 		fontStyle = "italic"

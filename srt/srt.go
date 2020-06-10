@@ -14,3 +14,7 @@ var reEndFont = regexp.MustCompile("(?i)</font>")
 func NewReader() caps.CaptionReader {
 	return Reader{}
 }
+
+func NewWriter() caps.CaptionWriter {
+	return Writer{}
+}

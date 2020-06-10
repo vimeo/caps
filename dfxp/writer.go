@@ -1,23 +1,27 @@
 package dfxp
 
-import "github.com/thiagopnts/caps"
+import (
+	"encoding/xml"
+
+	"github.com/thiagopnts/caps"
+)
 
 type Writer struct {
 	pStyle   bool
 	openSpan bool
 }
 
-// TODO implement XML Marshal grabing values from embeded Style.
-func NewWriter() Writer {
-	return Writer{
-		false,
-		false,
-	}
-}
-
 // TODO: rewrite all _recreate from python's DFXPWriter class
 
-func (w Writer) Write(captions *caps.CaptionSet) (BaseMarkup, error) {
+func (w Writer) WriteString(captions *caps.CaptionSet) (string, error) {
+	bytes, err := w.Write(captions)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+func (w Writer) Write(captions *caps.CaptionSet) ([]byte, error) {
 	st := DefaultStyle()
 	for _, style := range captions.GetStyles() {
 		st = NewStyle(style)
@@ -35,5 +39,9 @@ func (w Writer) Write(captions *caps.CaptionSet) (BaseMarkup, error) {
 		}
 		base.Body.Langs = append(base.Body.Langs, divLang)
 	}
-	return base, nil
+	content, err := xml.Marshal(base)
+	if err != nil {
+		return nil, err
+	}
+	return content, nil
 }

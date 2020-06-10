@@ -10,7 +10,11 @@ import (
 
 type Reader struct{}
 
-func (Reader) Detect(content string) bool {
+func (r Reader) Detect(content []byte) bool {
+	return r.DetectString(string(content))
+}
+
+func (Reader) DetectString(content string) bool {
 	lines := splitLines(content)
 	if len(lines) < 2 {
 		return false
@@ -80,7 +84,7 @@ func (Reader) ReadStringWithLang(content string, lang string) (*caps.CaptionSet,
 		}
 		if len(capNodes) > 0 {
 			capNodes = capNodes[:len(capNodes)-1]
-			c := caps.NewCaption(int(capStart), int(capEnd), capNodes, caps.DefaultStyle())
+			c := caps.NewCaption(int(capStart), int(capEnd), capNodes, caps.DefaultStyleProps())
 			captions = append(captions, &c)
 		}
 		startLine = endLine

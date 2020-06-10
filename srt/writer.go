@@ -10,12 +10,17 @@ import (
 
 type Writer struct{}
 
-func (Writer) Write(captionSet *caps.CaptionSet) string {
+func (w Writer) Write(captionSet *caps.CaptionSet) ([]byte, error) {
+	content, err := w.WriteString(captionSet)
+	return []byte(content), err
+}
+
+func (Writer) WriteString(captionSet *caps.CaptionSet) (string, error) {
 	contents := []string{}
 	for _, lang := range captionSet.GetLanguages() {
 		contents = append(contents, recreateLang(captionSet.GetCaptions(lang)))
 	}
-	return strings.Join(contents, "MULTI-LANGUAGE SRT\n")
+	return strings.Join(contents, "MULTI-LANGUAGE SRT\n"), nil
 }
 
 func recreateLang(captions []*caps.Caption) string {
