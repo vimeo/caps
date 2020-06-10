@@ -1,20 +1,16 @@
-package caps
+package srt
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/thiagopnts/caps"
 )
 
-type SRTReader struct{}
+type Reader struct{}
 
-var re = regexp.MustCompile("[0-9]{1,}")
-var reTiming = regexp.MustCompile("^([0-9]{1,}:[0-9]{1,}:[0-9]{1,},[0-9]{1,}) --> ([0-9]{1,}:[0-9]{1,}:[0-9]{1,},[0-9]{1,})")
-var reFont = regexp.MustCompile("(?i)<font color=\"#[0-9a-f]{6}\">")
-var reEndFont = regexp.MustCompile("(?i)</font>")
-
-func (SRTReader) Detect(content string) bool {
+func (Reader) Detect(content string) bool {
 	lines := splitLines(content)
 	if len(lines) < 2 {
 		return false
@@ -24,10 +20,21 @@ func (SRTReader) Detect(content string) bool {
 	}
 	return false
 }
+func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
+	return r.ReadStringWithLang(content, caps.DefaultLang)
+}
 
-func (SRTReader) Read(content string, lang string) (*CaptionSet, error) {
-	captionSet := NewCaptionSet()
-	captions := []*Caption{}
+func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
+	return r.ReadWithLang(content, caps.DefaultLang)
+}
+
+func (r Reader) ReadWithLang(content []byte, lang string) (*caps.CaptionSet, error) {
+	return r.ReadStringWithLang(string(content), lang)
+}
+
+func (Reader) ReadStringWithLang(content string, lang string) (*caps.CaptionSet, error) {
+	captionSet := caps.NewCaptionSet()
+	captions := []*caps.Caption{}
 	lines := splitLines(content)
 	startLine := 0
 
@@ -62,18 +69,18 @@ func (SRTReader) Read(content string, lang string) (*CaptionSet, error) {
 				return nil, err
 			}
 		}
-		capNodes := []CaptionNode{}
+		capNodes := []caps.CaptionContent{}
 		for _, line := range lines[startLine+2 : endLine-1] {
 			cleanLine := reFont.ReplaceAllString(line, "")
 			cleanLine = reEndFont.ReplaceAllString(cleanLine, "")
 			if len(capNodes) == 0 || line != "" {
-				capNodes = append(capNodes, CreateText(line))
-				capNodes = append(capNodes, CreateBreak())
+				capNodes = append(capNodes, caps.NewCaptionText(line))
+				capNodes = append(capNodes, caps.NewLineBreak())
 			}
 		}
 		if len(capNodes) > 0 {
 			capNodes = capNodes[:len(capNodes)-1]
-			c := NewCaption(int(capStart), int(capEnd), capNodes, DefaultStyle())
+			c := caps.NewCaption(int(capStart), int(capEnd), capNodes, caps.DefaultStyle())
 			captions = append(captions, &c)
 		}
 		startLine = endLine
@@ -145,43 +152,4 @@ func splitLines(content string) []string {
 		),
 		"\n",
 	)
-}
-
-type SRTWriter struct{}
-
-func (SRTWriter) Write(captionSet *CaptionSet) string {
-	contents := []string{}
-	for _, lang := range captionSet.GetLanguages() {
-		contents = append(contents, recreateLang(captionSet.GetCaptions(lang)))
-	}
-	return strings.Join(contents, "MULTI-LANGUAGE SRT\n")
-}
-
-func recreateLang(captions []*Caption) string {
-	//FIXME use string builder?
-	content := ""
-	count := 1
-	for _, caption := range captions {
-		content += fmt.Sprintf("%s\n", strconv.Itoa(count))
-		start := caption.FormatStartWithSeparator(",")
-		end := caption.FormatEndWithSeparator(",")
-		content += fmt.Sprintf("%s --> %s\n", start[:12], end[:12])
-		newContent := ""
-		for _, node := range caption.Nodes {
-			newContent += recreateLine(node)
-		}
-		content += fmt.Sprintf("%s\n\n", strings.ReplaceAll(newContent, "\n\n", "\n"))
-		count++
-	}
-	return content[:len(content)-1]
-}
-
-func recreateLine(node CaptionNode) string {
-	if node.Kind() == Text {
-		return node.GetContent()
-	}
-	if node.Kind() == LineBreak {
-		return "\n"
-	}
-	return ""
 }
