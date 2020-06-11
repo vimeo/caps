@@ -27,6 +27,10 @@ func (c Caption) GetText() string {
 	return content.String()
 }
 
+func (c Caption) String() string {
+	return fmt.Sprintf("%s --> %s\n%s", c.FormatStart(), c.FormatEnd(), c.GetText())
+}
+
 func (c Caption) FormatStartWithSeparator(sep string) string {
 	return formatTimestamp(c.Start, sep)
 }
