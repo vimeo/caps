@@ -118,7 +118,6 @@ func (r Reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.Capti
 func (r Reader) translateDiv(div *xmlquery.Node) []*caps.Caption {
 	captions := []*caps.Caption{}
 	for _, pTag := range xmlquery.Find(div, "//p") {
-		fmt.Println(pTag.Parent.Data)
 		if start, end, err := r.findTimes(div); err == nil {
 			captions = append(captions, r.translateParentTimedParagraph(pTag, start, end))
 		} else if c, err := r.translatePtag(pTag); err == nil {
