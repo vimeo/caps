@@ -5,15 +5,7 @@ import (
 	"strconv"
 )
 
-type Kind int
-
 const DefaultLang = "en-US"
-
-const (
-	Text Kind = iota
-	CapStyle
-	LineBreak
-)
 
 type CaptionReader interface {
 	Read([]byte) (*CaptionSet, error)
