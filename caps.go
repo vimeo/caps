@@ -15,7 +15,6 @@ type CaptionReader interface {
 }
 
 type CaptionWriter interface {
-	WriteString(*CaptionSet) (string, error)
 	Write(*CaptionSet) ([]byte, error)
 }
 
