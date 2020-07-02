@@ -7,8 +7,8 @@ import (
 )
 
 type Caption struct {
-	Start int
-	End   int
+	Start float64
+	End   float64
 	Nodes []CaptionContent
 	Style StyleProps
 }
@@ -47,19 +47,19 @@ func (c Caption) FormatEnd() string {
 	return formatTimestamp(c.End, ".")
 }
 
-func formatTimestamp(value int, sep string) string {
-	value /= 1000
+func formatTimestamp(timestamp float64, sep string) string {
+	value := int(timestamp / 1000)
 	seconds := math.Mod(float64(value)/1000, 60)
 	minutes := (value / (1000 * 60)) % 60
 	hours := (value / (1000 * 60 * 60) % 24)
-	timestamp := fmt.Sprintf("%02d:%02d:%06.3f", hours, minutes, seconds)
+	resultTimestamp := fmt.Sprintf("%02d:%02d:%06.3f", hours, minutes, seconds)
 	if sep != "." {
-		return strings.ReplaceAll(timestamp, ".", sep)
+		return strings.ReplaceAll(resultTimestamp, ".", sep)
 	}
-	return timestamp
+	return resultTimestamp
 }
 
-func NewCaption(start, end int, nodes []CaptionContent, style StyleProps) Caption {
+func NewCaption(start, end float64, nodes []CaptionContent, style StyleProps) Caption {
 	return Caption{
 		start,
 		end,

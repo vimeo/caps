@@ -111,8 +111,8 @@ func TestProperTimestamps(t *testing.T) {
 	assert.Nil(t, err)
 
 	paragraph := captionSet.GetCaptions("en-US")[2]
-	assert.Equal(t, 18752000, paragraph.Start)
-	assert.Equal(t, 20887000, paragraph.End)
+	assert.Equal(t, 18752000, int(paragraph.Start))
+	assert.Equal(t, 20887000, int(paragraph.End))
 }
 
 func TestInvalidMarkupIsProperlyHandled(t *testing.T) {

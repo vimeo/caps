@@ -84,7 +84,7 @@ func (Reader) ReadStringWithLang(content string, lang string) (*caps.CaptionSet,
 		}
 		if len(capNodes) > 0 {
 			capNodes = capNodes[:len(capNodes)-1]
-			c := caps.NewCaption(int(capStart), int(capEnd), capNodes, caps.DefaultStyleProps())
+			c := caps.NewCaption(float64(capStart), float64(capEnd), capNodes, caps.DefaultStyleProps())
 			captions = append(captions, &c)
 		}
 		startLine = endLine

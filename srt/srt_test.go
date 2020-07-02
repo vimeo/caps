@@ -22,8 +22,8 @@ func TestSRTTimestamp(t *testing.T) {
 	captions, err := reader.ReadString(sampleSRT)
 	assert.Nil(t, err)
 	p := captions.GetCaptions("en-US")[2]
-	assert.Equal(t, 17000000, p.Start)
-	assert.Equal(t, 18752000, p.End)
+	assert.Equal(t, 17000000, int(p.Start))
+	assert.Equal(t, 18752000, int(p.End))
 }
 
 func TestSRTNumeric(t *testing.T) {
@@ -59,8 +59,8 @@ func TestSRTtoSRT(t *testing.T) {
 	for _, test := range srtConvertionTests {
 		captions, err := NewReader().ReadString(test.inputSRT)
 		assert.Nil(t, err)
-		result, _ := NewWriter().WriteString(captions)
-		assert.Equal(t, result, test.wantSRT)
+		result, _ := NewWriter().Write(captions)
+		assert.Equal(t, string(result), test.wantSRT)
 	}
 }
 
