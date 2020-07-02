@@ -16,6 +16,10 @@ func NewReader(simulateRollUp bool, offset int) caps.CaptionReader {
 	}
 }
 
+func NewWriter() caps.CaptionWriter {
+	return &Writer{}
+}
+
 var commands = map[string]string{
 	"9420":  "",
 	"9429":  "",
@@ -614,7 +618,7 @@ var characters = map[string]string{
 	"52": "R",
 	"d3": "S",
 	"54": "T",
-	"d5": "",
+	"d5": "U",
 	"d6": "V",
 	"57": "W",
 	"58": "X",
@@ -661,7 +665,7 @@ var characters = map[string]string{
 }
 
 // Inverted character lookup
-var codeToCharacters = map[string]string{
+var charactersToCode = map[string]string{
 	" ": "20",
 	"!": "a1",
 	`"`: "a2",
@@ -715,6 +719,7 @@ var codeToCharacters = map[string]string{
 	"R": "52",
 	"S": "d3",
 	"T": "54",
+	"U": "d5",
 	"V": "d6",
 	"W": "57",
 	"X": "58",
@@ -756,9 +761,10 @@ var codeToCharacters = map[string]string{
 	"÷": "7c",
 	"Ñ": "fd",
 	"ñ": "fe",
-	"":  "7f",
+	"":  "80",
 	// FIXME python version has key collision
 	//"":  "d5",
+	//"":  "7f",
 	//"":  "80",
 }
 

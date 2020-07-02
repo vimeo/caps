@@ -17,8 +17,8 @@ type Reader struct {
 	lastCommand      string
 	rollRows         []string
 	rollRowsExpected int
-	paintTime        int
-	popTime          int
+	paintTime        float64
+	popTime          float64
 	popOn            bool
 	paintOn          bool
 	simulateRollUp   bool
@@ -249,7 +249,7 @@ func (r *Reader) handleDoubleCommand(word string) bool {
 	return false
 }
 
-func (r *Reader) convertToCaption(buffer string, start int) {
+func (r *Reader) convertToCaption(buffer string, start float64) {
 	if len(r.scc) > 0 && r.scc[len(r.scc)-1].End == 0 {
 		r.scc[len(r.scc)-1].End = r.scc[len(r.scc)-1].Start
 	}
@@ -325,7 +325,7 @@ func (r *Reader) removeExtraItalics(caption *caps.Caption) {
 	}
 }
 
-func (r *Reader) translateCurrentTime() (int, error) {
+func (r *Reader) translateCurrentTime() (float64, error) {
 	n, err := strconv.Atoi(r.time[len(r.time)-2:])
 	if err != nil {
 		return 0, err
@@ -336,29 +336,29 @@ func (r *Reader) translateCurrentTime() (int, error) {
 		secondsPerTimestampSecond = 1.0
 	}
 	timesplit := strings.Split(strings.ReplaceAll(strings.Trim(currStamp, " "), ";", ":"), ":")
-	t0, err := strconv.Atoi(timesplit[0])
+	t0, err := strconv.ParseFloat(timesplit[0], 64)
 	if err != nil {
 		return 0, err
 	}
-	t1, err := strconv.Atoi(timesplit[1])
+	t1, err := strconv.ParseFloat(timesplit[1], 64)
 	if err != nil {
 		return 0, err
 	}
-	t2, err := strconv.Atoi(timesplit[2])
+	t2, err := strconv.ParseFloat(timesplit[2], 64)
 	if err != nil {
 		return 0, err
 	}
-	t3, err := strconv.Atoi(timesplit[3])
+	t3, err := strconv.ParseFloat(timesplit[3], 64)
 	if err != nil {
 		return 0, err
 	}
-	timestampSeconds := (t0*3600 +
+	timestampSeconds := float64(t0*3600 +
 		t1*60 +
 		t2 +
 		t3/30.0)
-	microseconds := timestampSeconds * 1000 * 1000
-	microseconds -= r.offset
-	microseconds *= int(secondsPerTimestampSecond)
+	microseconds := timestampSeconds * 1000.0 * 1000.0
+	microseconds -= float64(r.offset)
+	microseconds *= secondsPerTimestampSecond
 	if microseconds < 0 {
 		return 0, nil
 	}
