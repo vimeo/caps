@@ -19,10 +19,7 @@ func (Reader) DetectString(content string) bool {
 	if len(lines) < 2 {
 		return false
 	}
-	if isDigit(lines[0]) && strings.Contains(lines[1], "-->") {
-		return true
-	}
-	return false
+	return isDigit(lines[0]) && strings.Contains(lines[1], "-->")
 }
 func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
 	return r.ReadStringWithLang(content, caps.DefaultLang)
