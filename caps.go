@@ -8,8 +8,8 @@ import (
 const DefaultLang = "en-US"
 
 type CaptionReader interface {
-	Read(string) (*CaptionSet, error)
-	Detect(string) bool
+	Read([]byte) (*CaptionSet, error)
+	Detect([]byte) bool
 }
 
 type CaptionWriter interface {

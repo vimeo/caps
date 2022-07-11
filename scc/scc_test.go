@@ -9,7 +9,8 @@ import (
 )
 
 const toleranceMicroseconds = 500 * 1000
-const sampleSCC = `Scenarist_SCC V1.0
+
+var sampleSCC = []byte(`Scenarist_SCC V1.0
 
 00:00:09:05 94ae 94ae 9420 9420 9470 9470 a820 e3ec efe3 6b20 f4e9 e36b e96e 6720 2980 942c 942c 942f 942f
 
@@ -29,9 +30,9 @@ const sampleSCC = `Scenarist_SCC V1.0
 
 00:00:36:04 942c 942c
 
-`
+`)
 
-const sccSamplePostCapsConvertion = `Scenarist_SCC V1.0
+var sccSamplePostCapsConvertion = []byte(`Scenarist_SCC V1.0
 
 00:00:09:23	94ae 94ae 9420 9420 9470 9470 a820 e3ec efe3 6b20 f4e9 e36b e96e 6720 2980 942c 942c 942f 942f
 
@@ -51,10 +52,10 @@ const sccSamplePostCapsConvertion = `Scenarist_SCC V1.0
 
 00:00:36:04	942c 942c
 
-`
+`)
 
-const sampleSCCempty = `Scenarist_SCC V1.0
-`
+var sampleSCCempty = []byte(`Scenarist_SCC V1.0
+`)
 
 func TestDetect(t *testing.T) {
 	if !DefaultReader().Detect(sampleSCC) {
@@ -97,8 +98,8 @@ func TestEmptyFile(t *testing.T) {
 
 func TestWriter(t *testing.T) {
 	type sccToSCCTests struct {
-		inputSCC string
-		wantSCC  string
+		inputSCC []byte
+		wantSCC  []byte
 	}
 	srtConvertionTests := []sccToSCCTests{
 		{inputSCC: sampleSCC, wantSCC: sccSamplePostCapsConvertion},
