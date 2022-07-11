@@ -60,7 +60,7 @@ func TestSRTtoSRT(t *testing.T) {
 		captions, err := NewReader().Read(test.inputSRT)
 		assert.Nil(t, err)
 		result, _ := NewWriter().Write(captions)
-		assert.Equal(t, string(result), test.wantSRT)
+		assert.Equal(t, result, test.wantSRT)
 	}
 }
 

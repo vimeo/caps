@@ -108,6 +108,6 @@ func TestWriter(t *testing.T) {
 		captionsSet, err := DefaultReader().Read(test.inputSCC)
 		assert.Nil(t, err)
 		result, _ := NewWriter().Write(captionsSet)
-		assert.Equal(t, test.wantSCC, string(result))
+		assert.Equal(t, test.wantSCC, result)
 	}
 }
