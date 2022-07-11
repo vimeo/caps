@@ -166,7 +166,7 @@ func (r *reader) translateTag(tag *xmlquery.Node) {
 	}
 }
 
-func (r reader) translateSpan(tag *xmlquery.Node) {
+func (r *reader) translateSpan(tag *xmlquery.Node) {
 	style := r.translateStyle(tag)
 	captionStyle := caps.NewCaptionStyle(true, style)
 	r.nodes = append(r.nodes, captionStyle)
