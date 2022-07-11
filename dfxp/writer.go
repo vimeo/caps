@@ -15,14 +15,6 @@ type Writer struct {
 
 // TODO: rewrite all _recreate from python's DFXPWriter class
 
-func (w Writer) WriteString(captions *caps.CaptionSet) (string, error) {
-	bytes, err := w.Write(captions)
-	if err != nil {
-		return "", err
-	}
-	return string(bytes), nil
-}
-
 func (w Writer) Write(captions *caps.CaptionSet) ([]byte, error) {
 	st := defaultStyle()
 	for _, style := range captions.GetStyles() {

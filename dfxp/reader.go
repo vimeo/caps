@@ -27,6 +27,7 @@ func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	captions := caps.NewCaptionSet()
 	tts := xmlquery.Find(doc, "/tt")
 	if len(tts) >= 1 {
