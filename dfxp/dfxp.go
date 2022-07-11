@@ -7,7 +7,7 @@ import (
 )
 
 func NewReader() caps.CaptionReader {
-	return &Reader{
+	return &reader{
 		framerate:  "30",
 		multiplier: []int{1, 1},
 		timebase:   "media",
@@ -16,7 +16,7 @@ func NewReader() caps.CaptionReader {
 }
 
 func NewWriter() caps.CaptionWriter {
-	return Writer{
+	return &writer{
 		false,
 		false,
 	}

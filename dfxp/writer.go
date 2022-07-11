@@ -8,14 +8,14 @@ import (
 	"github.com/thiagopnts/caps"
 )
 
-type Writer struct {
+type writer struct {
 	pStyle   bool
 	openSpan bool
 }
 
 // TODO: rewrite all _recreate from python's DFXPWriter class
 
-func (w Writer) Write(captions *caps.CaptionSet) ([]byte, error) {
+func (w writer) Write(captions *caps.CaptionSet) ([]byte, error) {
 	st := defaultStyle()
 	for _, style := range captions.GetStyles() {
 		st = newStyle(style)

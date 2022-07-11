@@ -10,19 +10,19 @@ import (
 	"github.com/thiagopnts/caps"
 )
 
-type Reader struct {
+type reader struct {
 	framerate  string
 	multiplier []int
 	timebase   string
 	nodes      []caps.CaptionContent
 }
 
-func (Reader) Detect(content []byte) bool {
+func (r reader) Detect(content []byte) bool {
 	validXML := xml.Unmarshal(content, new(interface{})) == nil
 	return strings.Contains(strings.ToLower(string(content)), "</tt>") && validXML
 }
 
-func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
+func (r reader) Read(content []byte) (*caps.CaptionSet, error) {
 	doc, err := xmlquery.Parse(strings.NewReader(string(content)))
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 	return captions, nil
 }
 
-func (r Reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.CaptionSet {
+func (r reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.CaptionSet {
 	for _, lang := range captionSet.Languages() {
 		captions := captionSet.GetCaptions(lang)
 		if len(captions) <= 1 {
@@ -103,7 +103,7 @@ func (r Reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.Capti
 	return captionSet
 }
 
-func (r Reader) translateDiv(div *xmlquery.Node) []*caps.Caption {
+func (r reader) translateDiv(div *xmlquery.Node) []*caps.Caption {
 	captions := []*caps.Caption{}
 	for _, pTag := range xmlquery.Find(div, "//p") {
 		if start, end, err := r.findTimes(div); err == nil {
@@ -115,7 +115,7 @@ func (r Reader) translateDiv(div *xmlquery.Node) []*caps.Caption {
 	return captions
 }
 
-func (r *Reader) translateParentTimedParagraph(paragraph *xmlquery.Node, start, end int) *caps.Caption {
+func (r *reader) translateParentTimedParagraph(paragraph *xmlquery.Node, start, end int) *caps.Caption {
 	r.nodes = []caps.CaptionContent{}
 
 	brs := xmlquery.Find(paragraph, "//br")
@@ -135,7 +135,7 @@ func (r *Reader) translateParentTimedParagraph(paragraph *xmlquery.Node, start, 
 	return &caption
 }
 
-func (r *Reader) translatePtag(paragraph *xmlquery.Node) (*caps.Caption, error) {
+func (r *reader) translatePtag(paragraph *xmlquery.Node) (*caps.Caption, error) {
 	start, end, err := r.findTimes(paragraph)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (r *Reader) translatePtag(paragraph *xmlquery.Node) (*caps.Caption, error) 
 	return captions, nil
 }
 
-func (r *Reader) translateTag(tag *xmlquery.Node) {
+func (r *reader) translateTag(tag *xmlquery.Node) {
 	switch tag.Data {
 	case "br":
 		r.nodes = append(r.nodes, caps.NewLineBreak())
@@ -168,7 +168,7 @@ func (r *Reader) translateTag(tag *xmlquery.Node) {
 	}
 }
 
-func (r *Reader) translateSpan(tag *xmlquery.Node) {
+func (r reader) translateSpan(tag *xmlquery.Node) {
 	style := r.translateStyle(tag)
 	captionStyle := caps.NewCaptionStyle(true, style)
 	r.nodes = append(r.nodes, captionStyle)
@@ -187,7 +187,7 @@ func (r *Reader) translateSpan(tag *xmlquery.Node) {
 	//	}
 }
 
-func (r Reader) translateStyle(tag *xmlquery.Node) caps.StyleProps {
+func (r reader) translateStyle(tag *xmlquery.Node) caps.StyleProps {
 	style := caps.StyleProps{}
 	for _, attr := range tag.Attr {
 		switch strings.ToLower(attr.Name.Local) {
@@ -212,7 +212,7 @@ func (r Reader) translateStyle(tag *xmlquery.Node) caps.StyleProps {
 	return style
 }
 
-func (r Reader) findTimes(root *xmlquery.Node) (int, int, error) {
+func (r reader) findTimes(root *xmlquery.Node) (int, int, error) {
 	begin := root.SelectAttr("begin")
 	if begin == "" {
 		return 0, 0, fmt.Errorf("tag doesnt have a time begin")
@@ -238,7 +238,7 @@ func (r Reader) findTimes(root *xmlquery.Node) (int, int, error) {
 	return start, end, nil
 }
 
-func (r Reader) translateTime(stamp string) (int, error) {
+func (r reader) translateTime(stamp string) (int, error) {
 	timesplit := strings.Split(stamp, ":")
 	if !strings.Contains(timesplit[2], ".") {
 		timesplit[2] = timesplit[2] + ".000"
