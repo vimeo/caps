@@ -15,7 +15,7 @@ func (Reader) Detect(content []byte) bool {
 	if len(lines) < 2 {
 		return false
 	}
-	return isDigit(lines[0]) && strings.Contains(lines[1], "-->")
+	return isDigit(lines[0]) && strings.Contains(lines[1], timecodeSeparator)
 }
 func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 	captionSet := caps.NewCaptionSet()
@@ -41,7 +41,7 @@ func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 				return nil, err
 			}
 		} else {
-			timing := strings.Split(lines[startLine+1], "-->")
+			timing := strings.Split(lines[startLine+1], timecodeSeparator)
 			if len(timing) < 2 {
 				return nil, fmt.Errorf("malformed srt file")
 			}
@@ -59,7 +59,7 @@ func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 			cleanLine := reFont.ReplaceAllString(line, "")
 			cleanLine = reEndFont.ReplaceAllString(cleanLine, "")
 			if len(capNodes) == 0 || line != "" {
-				capNodes = append(capNodes, caps.NewCaptionText(line))
+				capNodes = append(capNodes, caps.NewCaptionText(cleanLine))
 				capNodes = append(capNodes, caps.NewLineBreak())
 			}
 		}

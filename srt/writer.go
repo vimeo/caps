@@ -28,14 +28,16 @@ func recreateLang(captions []*caps.Caption) string {
 	count := 1
 	for _, caption := range captions {
 		content += fmt.Sprintf("%s\n", strconv.Itoa(count))
+
 		start := caption.FormatStartWithSeparator(",")
 		end := caption.FormatEndWithSeparator(",")
-		content += fmt.Sprintf("%s --> %s\n", start[:12], end[:12])
-		newContent := ""
+		content += fmt.Sprintf("%s %s %s\n", start[:12], timecodeSeparator, end[:12])
+
+		lines := ""
 		for _, node := range caption.Nodes {
-			newContent += recreateLine(node)
+			lines += recreateLine(node)
 		}
-		content += fmt.Sprintf("%s\n\n", strings.ReplaceAll(newContent, "\n\n", "\n"))
+		content += fmt.Sprintf("%s\n\n", strings.ReplaceAll(lines, "\n\n", "\n"))
 		count++
 	}
 	return content[:len(content)-1]
