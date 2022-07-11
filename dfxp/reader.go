@@ -1,6 +1,7 @@
 package dfxp
 
 import (
+	"encoding/xml"
 	"fmt"
 	"strconv"
 	"strings"
@@ -19,7 +20,8 @@ type Reader struct {
 }
 
 func (Reader) Detect(content []byte) bool {
-	return strings.Contains(strings.ToLower(string(content)), "</tt>")
+	validXML := xml.Unmarshal(content, new(interface{})) == nil
+	return strings.Contains(strings.ToLower(string(content)), "</tt>") && validXML
 }
 
 func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {

@@ -92,6 +92,7 @@ var sampleDFXPEmpty = []byte(`
 
 func TestDection(t *testing.T) {
 	assert.True(t, NewReader().Detect(sampleDFXP))
+	assert.False(t, NewReader().Detect([]byte("invalid XML")))
 }
 
 func TestCaptionLength(t *testing.T) {
