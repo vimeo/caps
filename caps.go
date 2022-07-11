@@ -19,23 +19,23 @@ type CaptionWriter interface {
 }
 
 type CaptionContent interface {
-	IsText() bool
-	IsStyle() bool
-	IsLineBreak() bool
-	GetContent() string
+	Text() bool
+	Style() bool
+	LineBreak() bool
+	Content() string
 }
 
 type isNot struct{}
 
-func (isNot) IsText() bool {
+func (isNot) Text() bool {
 	return false
 }
 
-func (isNot) IsLineBreak() bool {
+func (isNot) LineBreak() bool {
 	return false
 }
 
-func (isNot) IsStyle() bool {
+func (isNot) Style() bool {
 	return false
 }
 
@@ -44,7 +44,7 @@ type CaptionText struct {
 	isNot
 }
 
-func (CaptionText) IsText() bool {
+func (CaptionText) Text() bool {
 	return true
 }
 
@@ -52,22 +52,22 @@ func NewCaptionText(text string) CaptionContent {
 	return CaptionText{text, isNot{}}
 }
 
-func (c CaptionText) GetContent() string {
+func (c CaptionText) Content() string {
 	return c.content
 }
 
 type CaptionStyle struct {
-	Style StyleProps
+	Props StyleProps
 	Start bool
 	isNot
 }
 
-func (c CaptionStyle) IsStyle() bool {
+func (c CaptionStyle) Style() bool {
 	return true
 }
 
-func (c CaptionStyle) GetContent() string {
-	return c.Style.String()
+func (c CaptionStyle) Content() string {
+	return c.Props.String()
 }
 
 func NewCaptionStyle(start bool, style StyleProps) CaptionContent {
@@ -76,11 +76,11 @@ func NewCaptionStyle(start bool, style StyleProps) CaptionContent {
 
 type CaptionLineBreak struct{ isNot }
 
-func (c CaptionLineBreak) IsLineBreak() bool {
+func (c CaptionLineBreak) LineBreak() bool {
 	return true
 }
 
-func (c CaptionLineBreak) GetContent() string {
+func (c CaptionLineBreak) Content() string {
 	return "\n"
 }
 
@@ -146,7 +146,7 @@ func (c CaptionSet) SetCaptions(lang string, captions []*Caption) {
 	c.Captions[lang] = captions
 }
 
-func (c CaptionSet) GetLanguages() []string {
+func (c CaptionSet) Languages() []string {
 	keys := []string{}
 	for k := range c.Captions {
 		keys = append(keys, k)

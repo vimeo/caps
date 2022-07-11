@@ -17,7 +17,7 @@ func (w Writer) Write(captionSet *caps.CaptionSet) ([]byte, error) {
 
 func (Writer) WriteString(captionSet *caps.CaptionSet) (string, error) {
 	contents := []string{}
-	for _, lang := range captionSet.GetLanguages() {
+	for _, lang := range captionSet.Languages() {
 		contents = append(contents, recreateLang(captionSet.GetCaptions(lang)))
 	}
 	return strings.Join(contents, "MULTI-LANGUAGE SRT\n"), nil
@@ -42,10 +42,10 @@ func recreateLang(captions []*caps.Caption) string {
 }
 
 func recreateLine(node caps.CaptionContent) string {
-	if node.IsText() {
-		return node.GetContent()
+	if node.Text() {
+		return node.Content()
 	}
-	if node.IsLineBreak() {
+	if node.LineBreak() {
 		return "\n"
 	}
 	return ""

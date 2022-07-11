@@ -191,12 +191,12 @@ func TestCaptionNodes(t *testing.T) {
 	for i, caption := range captions {
 		assert.Equal(t, caption.FormatStart(), captionTests[i].wantFormatStart)
 		assert.Equal(t, caption.FormatEnd(), captionTests[i].wantFormatEnd)
-		assert.Equal(t, caption.GetText(), captionTests[i].wantText)
+		assert.Equal(t, caption.Text(), captionTests[i].wantText)
 		for j, node := range caption.Nodes {
-			assert.Equal(t, node.IsText(), nodeTests[i][j].IsText())
-			assert.Equal(t, node.IsStyle(), nodeTests[i][j].IsStyle())
-			assert.Equal(t, node.IsLineBreak(), nodeTests[i][j].IsLineBreak())
-			assert.Equal(t, node.GetContent(), nodeTests[i][j].GetContent())
+			assert.Equal(t, node.Text(), nodeTests[i][j].Text())
+			assert.Equal(t, node.Style(), nodeTests[i][j].Style())
+			assert.Equal(t, node.LineBreak(), nodeTests[i][j].LineBreak())
+			assert.Equal(t, node.Content(), nodeTests[i][j].Content())
 		}
 	}
 }

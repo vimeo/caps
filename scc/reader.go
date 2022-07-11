@@ -293,7 +293,7 @@ func (r *Reader) convertToCaption(buffer string, start float64) {
 func (r *Reader) translateBreak(caption *caps.Caption) {
 	if r.firstElement {
 		return
-	} else if len(caption.Nodes) > 0 && caption.Nodes[len(caption.Nodes)-1].IsLineBreak() {
+	} else if len(caption.Nodes) > 0 && caption.Nodes[len(caption.Nodes)-1].LineBreak() {
 		return
 	} else if r.openItalic {
 		style := caps.DefaultStyleProps()
@@ -311,10 +311,10 @@ func (r *Reader) removeExtraItalics(caption *caps.Caption) {
 		length = 0
 	}
 	for i < length {
-		if caption.Nodes[i].IsStyle() && caption.Nodes[i+1].IsLineBreak() && caption.Nodes[i+2].IsStyle() {
+		if caption.Nodes[i].Style() && caption.Nodes[i+1].LineBreak() && caption.Nodes[i+2].Style() {
 			style := caption.Nodes[i].(caps.CaptionStyle)
 			style2 := caption.Nodes[i+2].(caps.CaptionStyle)
-			if style.Style.Italics && style2.Style.Italics {
+			if style.Props.Italics && style2.Props.Italics {
 				caption.Nodes[i] = caption.Nodes[len(caption.Nodes)-1]
 				caption.Nodes[i+1] = caption.Nodes[len(caption.Nodes)-2]
 				caption.Nodes = caption.Nodes[:len(caption.Nodes)-2]

@@ -29,7 +29,7 @@ func (w Writer) Write(captions *caps.CaptionSet) ([]byte, error) {
 	sid := st.ID
 	base := NewBaseMarkup()
 	base.Head = Head{Style: st, Layout: DefaultRegion()}
-	for _, lang := range captions.GetLanguages() {
+	for _, lang := range captions.Languages() {
 		divLang := Lang{Lang: lang, Ps: []Paragraph{}}
 		for _, c := range captions.GetCaptions(lang) {
 			if c.Style.ID != "" {

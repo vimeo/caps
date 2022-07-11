@@ -62,21 +62,21 @@ func NewParagraph(caption *caps.Caption, s string) Paragraph {
 	var sp *Span
 
 	for _, node := range caption.Nodes {
-		if node.IsText() && sp == nil {
+		if node.Text() && sp == nil {
 			buf := bytes.Buffer{}
-			xml.Escape(&buf, []byte(node.GetContent()))
+			xml.Escape(&buf, []byte(node.Content()))
 			str := buf.String()
 			str = strings.ReplaceAll(str, `&#39;`, `'`)
 			str = strings.ReplaceAll(str, `&#34;`, `"`)
 			str = strings.ReplaceAll(str, `&#xA;`, ``)
 			line += str
-		} else if node.IsLineBreak() && sp == nil {
+		} else if node.LineBreak() && sp == nil {
 			line += "<br/>"
-		} else if node.IsStyle() && sp == nil {
-			sp = NewSpan(line, NewStyle(node.(caps.CaptionStyle).Style))
+		} else if node.Style() && sp == nil {
+			sp = NewSpan(line, NewStyle(node.(caps.CaptionStyle).Props))
 		} else if sp != nil {
 			// FIXME do all the strings.ReplaceAll here too
-			line += node.GetContent()
+			line += node.Content()
 			sp.Text += line
 		}
 	}

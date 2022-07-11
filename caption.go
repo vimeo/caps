@@ -13,22 +13,22 @@ type Caption struct {
 	Style StyleProps
 }
 
-func (c Caption) IsEmpty() bool {
+func (c Caption) Empty() bool {
 	return len(c.Nodes) == 0
 }
 
-func (c Caption) GetText() string {
+func (c Caption) Text() string {
 	var content strings.Builder
 	for _, node := range c.Nodes {
-		if !node.IsStyle() {
-			content.WriteString(node.GetContent())
+		if !node.Style() {
+			content.WriteString(node.Content())
 		}
 	}
 	return content.String()
 }
 
 func (c Caption) String() string {
-	return fmt.Sprintf("%s --> %s\n%s", c.FormatStart(), c.FormatEnd(), c.GetText())
+	return fmt.Sprintf("%s --> %s\n%s", c.FormatStart(), c.FormatEnd(), c.Text())
 }
 
 func (c Caption) FormatStartWithSeparator(sep string) string {

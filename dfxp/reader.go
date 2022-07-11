@@ -39,18 +39,16 @@ func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
 	tts := xmlquery.Find(doc, "/tt")
 	if len(tts) >= 1 {
 		tt := tts[0]
+		r.timebase = "0"
 		if timebase := tt.SelectAttr("ttp:timebase"); timebase != "" {
 			r.timebase = timebase
-		} else {
-			r.timebase = "0"
 		}
-
+		r.framerate = "30"
 		if framerate := tt.SelectAttr("ttp:framerate"); framerate != "" {
 			r.framerate = framerate
-		} else {
-			r.framerate = "30"
 		}
 
+		r.multiplier = []int{1, 1}
 		if multiplier := tt.SelectAttr("ttp:framemultiplier"); multiplier != "" {
 			multipliers := strings.Split(multiplier, " ")
 			a, err := strconv.Atoi(multipliers[0])
@@ -62,8 +60,6 @@ func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
 				return nil, fmt.Errorf("failed to read multiplier: %w", err)
 			}
 			r.multiplier = []int{a, b}
-		} else {
-			r.multiplier = []int{1, 1}
 		}
 	}
 	for _, div := range xmlquery.Find(doc, "//div") {
@@ -82,7 +78,6 @@ func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
 		parsedStyle := r.translateStyle(style)
 		parsedStyle.ID = id
 		captions.AddStyle(parsedStyle)
-
 	}
 	captions = r.combineMatchingCaptions(captions)
 	if captions.IsEmpty() {
@@ -92,7 +87,7 @@ func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
 }
 
 func (r Reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.CaptionSet {
-	for _, lang := range captionSet.GetLanguages() {
+	for _, lang := range captionSet.Languages() {
 		captions := captionSet.GetCaptions(lang)
 		if len(captions) <= 1 {
 			return captionSet

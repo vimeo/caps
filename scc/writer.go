@@ -20,11 +20,11 @@ type codeMetadata struct {
 func (w *Writer) Write(captionSet *caps.CaptionSet) ([]byte, error) {
 	output := bytes.NewBufferString(header)
 	output.WriteString("\n\n")
-	if captionSet.IsEmpty() || len(captionSet.GetLanguages()) <= 0 {
+	if captionSet.IsEmpty() || len(captionSet.Languages()) <= 0 {
 		return output.Bytes(), nil
 	}
 	// support only one language
-	lang := captionSet.GetLanguages()[0]
+	lang := captionSet.Languages()[0]
 	captions := captionSet.GetCaptions(lang)
 	codes := []codeMetadata{}
 	for _, caption := range captions {
@@ -134,8 +134,8 @@ func (w *Writer) maybeAlign(buf *bytes.Buffer) {
 func (w *Writer) layoutLine(caption *caps.Caption) string {
 	capText := bytes.NewBufferString("")
 	for _, node := range caption.Nodes {
-		if node.IsText() || node.IsLineBreak() {
-			capText.WriteString(node.GetContent())
+		if node.Text() || node.LineBreak() {
+			capText.WriteString(node.Content())
 		}
 	}
 	innerLines := strings.Split(capText.String(), "\n")
