@@ -10,8 +10,6 @@ import (
 	"github.com/thiagopnts/caps"
 )
 
-const defaultLanguageCode = "en-US"
-
 type Reader struct {
 	framerate  string
 	multiplier []int
@@ -59,7 +57,7 @@ func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 	for _, div := range xmlquery.Find(doc, "//div") {
 		lang := div.SelectAttr("xml:lang")
 		if lang == "" {
-			lang = defaultLanguageCode
+			lang = caps.DefaultLang
 		}
 		captions.SetCaptions(lang, r.translateDiv(div))
 	}
