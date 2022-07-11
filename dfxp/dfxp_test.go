@@ -9,7 +9,7 @@ import (
 	"github.com/thiagopnts/caps"
 )
 
-const sampleDFXP string = `<?xml version="1.0" encoding="utf-8"?>
+var sampleDFXP = []byte(`<?xml version="1.0" encoding="utf-8"?>
 <tt xml:lang="en" xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling">
   <head>
     <styling>
@@ -57,9 +57,9 @@ const sampleDFXP string = `<?xml version="1.0" encoding="utf-8"?>
      </p>
     </div>
   </body>
-</tt>`
+</tt>`)
 
-const sampleDFXPSyntaxError = `
+var sampleDFXPSyntaxError = []byte(`
   <?xml version="1.0" encoding="UTF-8"?>
   <tt xml:lang="en" xmlns="http://www.w3.org/ns/ttml">
   <body>
@@ -69,9 +69,9 @@ const sampleDFXPSyntaxError = `
     </div>
    </body>
   </tt>
-`
+`)
 
-const sampleDFXPEmpty = `
+var sampleDFXPEmpty = []byte(`
   <?xml version="1.0" encoding="utf-8"?>
   <tt xml:lang="en" xmlns="http://www.w3.org/ns/ttml"
       xmlns:tts="http://www.w3.org/ns/ttml#styling">
@@ -88,7 +88,7 @@ const sampleDFXPEmpty = `
     </div>
    </body>
   </tt>
-`
+`)
 
 func TestDection(t *testing.T) {
 	assert.True(t, NewReader().Detect(sampleDFXP))

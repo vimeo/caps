@@ -10,21 +10,17 @@ import (
 
 type Reader struct{}
 
-func (Reader) Detect(content string) bool {
-	lines := splitLines(content)
+func (Reader) Detect(content []byte) bool {
+	lines := splitLines(string(content))
 	if len(lines) < 2 {
 		return false
 	}
 	return isDigit(lines[0]) && strings.Contains(lines[1], "-->")
 }
-func (r Reader) Read(content string) (*caps.CaptionSet, error) {
-	return r.ReadWithLang(content, caps.DefaultLang)
-}
-
-func (Reader) ReadWithLang(content string, lang string) (*caps.CaptionSet, error) {
+func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 	captionSet := caps.NewCaptionSet()
 	captions := []*caps.Caption{}
-	lines := splitLines(content)
+	lines := splitLines(string(content))
 	startLine := 0
 
 	for startLine < len(lines) {
@@ -74,7 +70,7 @@ func (Reader) ReadWithLang(content string, lang string) (*caps.CaptionSet, error
 		}
 		startLine = endLine
 	}
-	captionSet.SetCaptions(lang, captions)
+	captionSet.SetCaptions(caps.DefaultLang, captions)
 	if captionSet.IsEmpty() {
 		return nil, fmt.Errorf("empty srt file")
 	}

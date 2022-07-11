@@ -28,20 +28,14 @@ type Reader struct {
 	offset           int
 }
 
-const defaultLang = "en-US"
-
 var timestampWords = regexp.MustCompile(`([0-9:;]*)([\s\t]*)((.)*)`)
 
-func (Reader) Detect(content string) bool {
-	return strings.HasPrefix(strings.TrimLeft(content, " "), header)
+func (Reader) Detect(content []byte) bool {
+	return strings.HasPrefix(strings.TrimLeft(string(content), " "), header)
 }
 
-func (r *Reader) Read(content string) (*caps.CaptionSet, error) {
-	return r.ReadLang(content, defaultLang)
-}
-
-func (r *Reader) ReadLang(content string, lang string) (*caps.CaptionSet, error) {
-	lines := strings.Split(content, "\n")
+func (r *Reader) Read(content []byte) (*caps.CaptionSet, error) {
+	lines := strings.Split(string(content), "\n")
 	for _, line := range lines[1:] {
 		r.translateLine(line)
 	}
@@ -49,7 +43,7 @@ func (r *Reader) ReadLang(content string, lang string) (*caps.CaptionSet, error)
 		r.rollUp()
 	}
 	set := caps.NewCaptionSet()
-	set.SetCaptions(lang, r.scc)
+	set.SetCaptions(caps.DefaultLang, r.scc)
 	if set.IsEmpty() {
 		return set, fmt.Errorf("empty caption file")
 	}

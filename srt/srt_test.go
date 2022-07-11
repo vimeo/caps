@@ -48,8 +48,8 @@ func TestSRTExtraEmpty(t *testing.T) {
 
 func TestSRTtoSRT(t *testing.T) {
 	type srtToSRTTests struct {
-		inputSRT string
-		wantSRT  string
+		inputSRT []byte
+		wantSRT  []byte
 	}
 	srtConvertionTests := []srtToSRTTests{
 		{inputSRT: sampleSRT, wantSRT: sampleSRT},
@@ -64,7 +64,7 @@ func TestSRTtoSRT(t *testing.T) {
 	}
 }
 
-const sampleSRTu = `1
+var sampleSRTu = []byte(`1
 00:00:09,209 --> 00:00:12,312
 ( clock ticking )
 
@@ -97,9 +97,9 @@ It's all about an eternal Einstein.
 7
 00:00:32,200 --> 00:00:36,200
 <LAUGHING & WHOOPS!>
-`
+`)
 
-const sampleSRTutf8 = `1
+var sampleSRTutf8 = []byte(`1
 00:00:09,209 --> 00:00:12,312
 ( clock ticking )
 
@@ -132,9 +132,9 @@ It's all about an eternal Einstein.
 7
 00:00:32,200 --> 00:00:36,200
 <LAUGHING & WHOOPS!>
-`
+`)
 
-const sampleSRT = `1
+var sampleSRT = []byte(`1
 00:00:09,209 --> 00:00:12,312
 ( clock ticking )
 
@@ -171,9 +171,9 @@ It's all about an eternal Einstein.
 8
 00:00:34,400 --> 00:00:38,400
 some more text
-`
+`)
 
-const sampleSRTnumeric = `35
+var sampleSRTnumeric = []byte(`35
 00:00:32,290 --> 00:00:32,890
 TO  FIND  HIM.            IF
 
@@ -200,12 +200,12 @@ STD  OUT
 41
 00:00:36,460 --> 00:02:11,500
 3
-`
+`)
 
-const sampleSRTempty = `
-`
+var sampleSRTempty = []byte(`
+`)
 
-const sampleSRTblankLines = `35
+var sampleSRTblankLines []byte = []byte(`35
 00:00:32,290 --> 00:00:32,890
 
 
@@ -213,4 +213,4 @@ const sampleSRTblankLines = `35
 00:00:32,990 --> 00:00:33,590
 YOU  HAVE  ANY  INFORMATION
 
-`
+`)
