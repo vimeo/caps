@@ -57,13 +57,13 @@ const sampleSCCempty = `Scenarist_SCC V1.0
 `
 
 func TestDetect(t *testing.T) {
-	if !DefaultReader().DetectString(sampleSCC) {
+	if !DefaultReader().Detect(sampleSCC) {
 		t.Error("valid scc sample should be detected")
 	}
 }
 
 func TestCaptionLength(t *testing.T) {
-	captionSet, err := DefaultReader().ReadString(sampleSCC)
+	captionSet, err := DefaultReader().Read(sampleSCC)
 	if err != nil {
 		t.Errorf("scc reader failed: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestCaptionLength(t *testing.T) {
 }
 
 func TestCaptionContent(t *testing.T) {
-	captionSet, err := DefaultReader().ReadString(sampleSCC)
+	captionSet, err := DefaultReader().Read(sampleSCC)
 	if err != nil {
 		t.Errorf("scc reader failed: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestCaptionContent(t *testing.T) {
 }
 
 func TestEmptyFile(t *testing.T) {
-	_, err := DefaultReader().ReadString(sampleSCCempty)
+	_, err := DefaultReader().Read(sampleSCCempty)
 	if err == nil {
 		t.Errorf("should have returned an error")
 	}
@@ -104,7 +104,7 @@ func TestWriter(t *testing.T) {
 		{inputSCC: sampleSCC, wantSCC: sccSamplePostCapsConvertion},
 	}
 	for _, test := range srtConvertionTests {
-		captionsSet, err := DefaultReader().ReadString(test.inputSCC)
+		captionsSet, err := DefaultReader().Read(test.inputSCC)
 		assert.Nil(t, err)
 		result, _ := NewWriter().Write(captionsSet)
 		assert.Equal(t, test.wantSCC, string(result))

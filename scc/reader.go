@@ -32,27 +32,15 @@ const defaultLang = "en-US"
 
 var timestampWords = regexp.MustCompile(`([0-9:;]*)([\s\t]*)((.)*)`)
 
-func (Reader) Detect(content []byte) bool {
-	return strings.HasPrefix(strings.TrimLeft(string(content), " "), header)
-}
-
-func (Reader) DetectString(content string) bool {
+func (Reader) Detect(content string) bool {
 	return strings.HasPrefix(strings.TrimLeft(content, " "), header)
 }
 
-func (r *Reader) ReadLang(content []byte, lang string) (*caps.CaptionSet, error) {
-	return r.ReadStringLang(string(content), lang)
+func (r *Reader) Read(content string) (*caps.CaptionSet, error) {
+	return r.ReadLang(content, defaultLang)
 }
 
-func (r *Reader) Read(content []byte) (*caps.CaptionSet, error) {
-	return r.ReadStringLang(string(content), defaultLang)
-}
-
-func (r *Reader) ReadString(content string) (*caps.CaptionSet, error) {
-	return r.ReadStringLang(content, defaultLang)
-}
-
-func (r *Reader) ReadStringLang(content string, lang string) (*caps.CaptionSet, error) {
+func (r *Reader) ReadLang(content string, lang string) (*caps.CaptionSet, error) {
 	lines := strings.Split(content, "\n")
 	for _, line := range lines[1:] {
 		r.translateLine(line)

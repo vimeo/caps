@@ -10,30 +10,18 @@ import (
 
 type Reader struct{}
 
-func (r Reader) Detect(content []byte) bool {
-	return r.DetectString(string(content))
-}
-
-func (Reader) DetectString(content string) bool {
+func (Reader) Detect(content string) bool {
 	lines := splitLines(content)
 	if len(lines) < 2 {
 		return false
 	}
 	return isDigit(lines[0]) && strings.Contains(lines[1], "-->")
 }
-func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
-	return r.ReadStringWithLang(content, caps.DefaultLang)
-}
-
-func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
+func (r Reader) Read(content string) (*caps.CaptionSet, error) {
 	return r.ReadWithLang(content, caps.DefaultLang)
 }
 
-func (r Reader) ReadWithLang(content []byte, lang string) (*caps.CaptionSet, error) {
-	return r.ReadStringWithLang(string(content), lang)
-}
-
-func (Reader) ReadStringWithLang(content string, lang string) (*caps.CaptionSet, error) {
+func (Reader) ReadWithLang(content string, lang string) (*caps.CaptionSet, error) {
 	captionSet := caps.NewCaptionSet()
 	captions := []*caps.Caption{}
 	lines := splitLines(content)
