@@ -1,7 +1,6 @@
 package srt
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,12 +29,13 @@ func TestSRTTimestamp(t *testing.T) {
 	assert.Equal(t, 18752000, int(p.End))
 }
 
-func TestSRTFontColor(t *testing.T) {
+func TestSRTStripFontColor(t *testing.T) {
 	reader := NewReader()
 	captions, err := reader.Read(SampleSRTFontColor)
+	text := captions.GetCaptions(caps.DefaultLang)[3].Nodes[0].Content()
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(captions.GetCaptions(caps.DefaultLang)))
-	fmt.Println(captions.GetCaptions(caps.DefaultLang)[3])
+	assert.Equal(t, "as an old, wrinkly man", text)
 }
 
 func TestSRTNumeric(t *testing.T) {
@@ -210,7 +210,7 @@ of "E equals m c-squared",
 
 4
 00:00:18,752 --> 00:00:20,887
-<font color=“white”>as an old, wrinkly man</font>
+<font color="white">as an old, wrinkly man</font>
 `)
 
 var SampleSRTNumeric = []byte(`35
