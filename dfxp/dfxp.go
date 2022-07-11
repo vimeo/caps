@@ -53,8 +53,6 @@ type Paragraph struct {
 	Span    *Span    `xml:",omitempty"`
 }
 
-const brTag = "<br/>"
-
 func NewParagraph(caption *caps.Caption, s string) Paragraph {
 	start := caption.FormatStart()
 	end := caption.FormatEnd()
