@@ -91,9 +91,7 @@ func (r reader) combineMatchingCaptions(captionSet *caps.CaptionSet) *caps.Capti
 			lastIndex := len(newCaps) - 1
 			if caption.Start == newCaps[lastIndex].Start && caption.End == newCaps[lastIndex].End {
 				newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, caps.NewLineBreak())
-				for _, node := range caption.Nodes {
-					newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, node)
-				}
+				newCaps[lastIndex].Nodes = append(newCaps[lastIndex].Nodes, caption.Nodes...)
 				continue
 			}
 			newCaps = append(newCaps, caption)
