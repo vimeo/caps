@@ -3,7 +3,7 @@ package dfxp
 import (
 	"encoding/xml"
 
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 func NewReader() caps.CaptionReader {

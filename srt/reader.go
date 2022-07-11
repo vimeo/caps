@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 type Reader struct{}

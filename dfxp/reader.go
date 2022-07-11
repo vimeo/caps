@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/antchfx/xmlquery"
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 type reader struct {

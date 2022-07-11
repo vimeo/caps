@@ -3,7 +3,7 @@ package srt
 import (
 	"regexp"
 
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 var re = regexp.MustCompile("[0-9]{1,}")
