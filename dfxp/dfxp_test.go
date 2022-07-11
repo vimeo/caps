@@ -91,23 +91,23 @@ const sampleDFXPEmpty = `
 `
 
 func TestDection(t *testing.T) {
-	assert.True(t, NewReader().DetectString(sampleDFXP))
+	assert.True(t, NewReader().Detect(sampleDFXP))
 }
 
 func TestCaptionLength(t *testing.T) {
-	captionSet, err := NewReader().ReadString(sampleDFXP)
+	captionSet, err := NewReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 	assert.Equal(t, 7, len(captionSet.GetCaptions("en-US")))
 }
 
 func TestEmptyFile(t *testing.T) {
-	set, err := NewReader().ReadString(sampleDFXPEmpty)
+	set, err := NewReader().Read(sampleDFXPEmpty)
 	assert.NotNil(t, err)
 	assert.True(t, set.IsEmpty())
 }
 
 func TestProperTimestamps(t *testing.T) {
-	captionSet, err := NewReader().ReadString(sampleDFXP)
+	captionSet, err := NewReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 
 	paragraph := captionSet.GetCaptions("en-US")[2]
@@ -116,13 +116,13 @@ func TestProperTimestamps(t *testing.T) {
 }
 
 func TestInvalidMarkupIsProperlyHandled(t *testing.T) {
-	captionSet, err := NewReader().ReadString(sampleDFXPSyntaxError)
+	captionSet, err := NewReader().Read(sampleDFXPSyntaxError)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(captionSet.GetCaptions("en-US")))
 }
 
 func TestCaptionNodes(t *testing.T) {
-	captionSet, err := NewReader().ReadString(sampleDFXP)
+	captionSet, err := NewReader().Read(sampleDFXP)
 	assert.Nil(t, err)
 	styles := captionSet.GetStyles()
 	assert.Equal(t, 1, len(styles))
@@ -209,7 +209,7 @@ func TestStructToXML(t *testing.T) {
 }
 
 //func TestDFXPWriter(t *testing.T) {
-//	captionSet, err := NewReader().ReadString(sampleDFXP)
+//	captionSet, err := NewReader().Read(sampleDFXP)
 //	assert.Nil(t, err)
 //	data, _ := NewWriter().Write(captionSet)
 //	fmt.Println(sampleDFXP[0])

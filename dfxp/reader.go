@@ -18,19 +18,11 @@ type Reader struct {
 	nodes      []caps.CaptionContent
 }
 
-func (Reader) DetectString(content string) bool {
+func (Reader) Detect(content string) bool {
 	return strings.Contains(strings.ToLower(content), "</tt>")
 }
 
-func (r Reader) Detect(content []byte) bool {
-	return r.DetectString(string(content))
-}
-
-func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
-	return r.ReadString(string(content))
-}
-
-func (r Reader) ReadString(content string) (*caps.CaptionSet, error) {
+func (r Reader) Read(content string) (*caps.CaptionSet, error) {
 	doc, err := xmlquery.Parse(strings.NewReader(content))
 	if err != nil {
 		return nil, err

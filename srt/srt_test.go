@@ -7,19 +7,19 @@ import (
 )
 
 func TestSRTDetection(t *testing.T) {
-	assert.True(t, Reader{}.DetectString(sampleSRT))
+	assert.True(t, Reader{}.Detect(sampleSRT))
 }
 
 func TestSRTCaptionLength(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.ReadString(sampleSRT)
+	captions, err := reader.Read(sampleSRT)
 	assert.Nil(t, err)
 	assert.Equal(t, 8, len(captions.GetCaptions("en-US")))
 }
 
 func TestSRTTimestamp(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.ReadString(sampleSRT)
+	captions, err := reader.Read(sampleSRT)
 	assert.Nil(t, err)
 	p := captions.GetCaptions("en-US")[2]
 	assert.Equal(t, 17000000, int(p.Start))
@@ -28,20 +28,20 @@ func TestSRTTimestamp(t *testing.T) {
 
 func TestSRTNumeric(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.ReadString(sampleSRTnumeric)
+	captions, err := reader.Read(sampleSRTnumeric)
 	assert.Nil(t, err)
 	assert.Equal(t, 7, len(captions.GetCaptions("en-US")))
 }
 
 func TestSRTEmptyFile(t *testing.T) {
 	reader := NewReader()
-	_, err := reader.ReadString(sampleSRTempty)
+	_, err := reader.Read(sampleSRTempty)
 	assert.NotNil(t, err)
 }
 
 func TestSRTExtraEmpty(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.ReadString(sampleSRTblankLines)
+	captions, err := reader.Read(sampleSRTblankLines)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(captions.GetCaptions("en-US")))
 }
@@ -57,7 +57,7 @@ func TestSRTtoSRT(t *testing.T) {
 		{inputSRT: sampleSRTu, wantSRT: sampleSRTu},
 	}
 	for _, test := range srtConvertionTests {
-		captions, err := NewReader().ReadString(test.inputSRT)
+		captions, err := NewReader().Read(test.inputSRT)
 		assert.Nil(t, err)
 		result, _ := NewWriter().Write(captions)
 		assert.Equal(t, string(result), test.wantSRT)
