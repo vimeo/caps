@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 func TestDetect(t *testing.T) {
