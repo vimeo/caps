@@ -4,46 +4,58 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/thiagopnts/caps"
 )
 
 func TestSRTDetection(t *testing.T) {
-	assert.True(t, Reader{}.Detect(sampleSRT))
+	assert.True(t, Reader{}.Detect(SampleSRT))
+	assert.False(t, Reader{}.Detect(InvalidSRT1))
+	assert.False(t, Reader{}.Detect(InvalidSRT2))
 }
 
 func TestSRTCaptionLength(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.Read(sampleSRT)
+	captions, err := reader.Read(SampleSRT)
 	assert.Nil(t, err)
-	assert.Equal(t, 8, len(captions.GetCaptions("en-US")))
+	assert.Equal(t, 8, len(captions.GetCaptions(caps.DefaultLang)))
 }
 
 func TestSRTTimestamp(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.Read(sampleSRT)
+	captions, err := reader.Read(SampleSRT)
 	assert.Nil(t, err)
-	p := captions.GetCaptions("en-US")[2]
+	p := captions.GetCaptions(caps.DefaultLang)[2]
 	assert.Equal(t, 17000000, int(p.Start))
 	assert.Equal(t, 18752000, int(p.End))
 }
 
+func TestSRTStripFontColor(t *testing.T) {
+	reader := NewReader()
+	captions, err := reader.Read(SampleSRTFontColor)
+	text := captions.GetCaptions(caps.DefaultLang)[3].Nodes[0].Content()
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(captions.GetCaptions(caps.DefaultLang)))
+	assert.Equal(t, "as an old, wrinkly man", text)
+}
+
 func TestSRTNumeric(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.Read(sampleSRTnumeric)
+	captions, err := reader.Read(SampleSRTNumeric)
 	assert.Nil(t, err)
-	assert.Equal(t, 7, len(captions.GetCaptions("en-US")))
+	assert.Equal(t, 7, len(captions.GetCaptions(caps.DefaultLang)))
 }
 
 func TestSRTEmptyFile(t *testing.T) {
 	reader := NewReader()
-	_, err := reader.Read(sampleSRTempty)
+	_, err := reader.Read(SampleSRTEmpty)
 	assert.NotNil(t, err)
 }
 
 func TestSRTExtraEmpty(t *testing.T) {
 	reader := NewReader()
-	captions, err := reader.Read(sampleSRTblankLines)
+	captions, err := reader.Read(SampleSRTBlankLines)
 	assert.Nil(t, err)
-	assert.Equal(t, 2, len(captions.GetCaptions("en-US")))
+	assert.Equal(t, 2, len(captions.GetCaptions(caps.DefaultLang)))
 }
 
 func TestSRTtoSRT(t *testing.T) {
@@ -52,9 +64,9 @@ func TestSRTtoSRT(t *testing.T) {
 		wantSRT  []byte
 	}
 	srtConvertionTests := []srtToSRTTests{
-		{inputSRT: sampleSRT, wantSRT: sampleSRT},
-		{inputSRT: sampleSRTutf8, wantSRT: sampleSRTutf8},
-		{inputSRT: sampleSRTu, wantSRT: sampleSRTu},
+		{inputSRT: SampleSRT, wantSRT: SampleSRT},
+		{inputSRT: SampleSRTutf8, wantSRT: SampleSRTutf8},
+		{inputSRT: SampleSRTUnicode, wantSRT: SampleSRTUnicode},
 	}
 	for _, test := range srtConvertionTests {
 		captions, err := NewReader().Read(test.inputSRT)
@@ -64,7 +76,16 @@ func TestSRTtoSRT(t *testing.T) {
 	}
 }
 
-var sampleSRTu = []byte(`1
+var InvalidSRT1 = []byte(`1
+blank line
+`)
+
+var InvalidSRT2 = []byte(`1
+00:00:09,209 -> 00:00:12,312
+incorrect separator
+`)
+
+var SampleSRTUnicode = []byte(`1
 00:00:09,209 --> 00:00:12,312
 ( clock ticking )
 
@@ -99,7 +120,7 @@ It's all about an eternal Einstein.
 <LAUGHING & WHOOPS!>
 `)
 
-var sampleSRTutf8 = []byte(`1
+var SampleSRTutf8 = []byte(`1
 00:00:09,209 --> 00:00:12,312
 ( clock ticking )
 
@@ -134,7 +155,7 @@ It's all about an eternal Einstein.
 <LAUGHING & WHOOPS!>
 `)
 
-var sampleSRT = []byte(`1
+var SampleSRT = []byte(`1
 00:00:09,209 --> 00:00:12,312
 ( clock ticking )
 
@@ -173,7 +194,26 @@ It's all about an eternal Einstein.
 some more text
 `)
 
-var sampleSRTnumeric = []byte(`35
+var SampleSRTFontColor = []byte(`1
+00:00:09,209 --> 00:00:12,312
+( clock ticking )
+
+2
+00:00:14,848 --> 00:00:17,000
+MAN:
+When we think
+of "E equals m c-squared",
+
+3
+00:00:17,000 --> 00:00:18,752
+<LAUGHING & WHOOPS!>
+
+4
+00:00:18,752 --> 00:00:20,887
+<font color="white">as an old, wrinkly man</font>
+`)
+
+var SampleSRTNumeric = []byte(`35
 00:00:32,290 --> 00:00:32,890
 TO  FIND  HIM.            IF
 
@@ -202,10 +242,10 @@ STD  OUT
 3
 `)
 
-var sampleSRTempty = []byte(`
+var SampleSRTEmpty = []byte(`
 `)
 
-var sampleSRTblankLines []byte = []byte(`35
+var SampleSRTBlankLines []byte = []byte(`35
 00:00:32,290 --> 00:00:32,890
 
 
