@@ -1,6 +1,6 @@
 package scc
 
-import "github.com/thiagopnts/caps"
+import "github.com/vimeo/caps"
 
 func DefaultReader() caps.CaptionReader {
 	return &Reader{

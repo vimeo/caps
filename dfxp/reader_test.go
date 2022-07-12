@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 var sampleDFXP = []byte(`<?xml version="1.0" encoding="utf-8"?>

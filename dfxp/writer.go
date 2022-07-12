@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"strings"
 
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 type writer struct {

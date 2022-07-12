@@ -6,7 +6,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/thiagopnts/caps"
+	"github.com/vimeo/caps"
 )
 
 type Writer struct{}
