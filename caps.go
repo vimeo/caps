@@ -98,6 +98,7 @@ type StyleProps struct {
 	TextAlign  string
 	FontFamily string
 	FontSize   string
+	Lang       string
 	Color      string
 	Italics    bool
 	Bold       bool
