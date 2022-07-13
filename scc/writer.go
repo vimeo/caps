@@ -55,7 +55,7 @@ func (w *Writer) Write(captionSet *caps.CaptionSet) ([]byte, error) {
 		output.WriteString("94ae 94ae 9420 9420 ")
 		output.WriteString(metadata.Code)
 		output.WriteString("942c 942c 942f 942f\n\n")
-		if metadata.End != nil {
+		if metadata.End != nil && *metadata.End != 0 {
 			output.WriteString(fmt.Sprintf("%s\t942c 942c\n\n", w.formatTimestamp(*metadata.End)))
 		}
 	}

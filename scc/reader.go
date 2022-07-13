@@ -1,6 +1,7 @@
 package scc
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -31,7 +32,7 @@ type Reader struct {
 var timestampWords = regexp.MustCompile(`([0-9:;]*)([\s\t]*)((.)*)`)
 
 func (Reader) Detect(content []byte) bool {
-	return strings.HasPrefix(strings.TrimLeft(string(content), " "), header)
+	return bytes.HasPrefix(content, []byte(header))
 }
 
 func (r *Reader) Read(content []byte) (*caps.CaptionSet, error) {
@@ -261,7 +262,7 @@ func (r *Reader) convertToCaption(buffer string, start float64) {
 		}
 	}
 	// close any open italics left
-	if r.openItalic == true {
+	if r.openItalic {
 		style := caps.DefaultStyleProps()
 		style.Italics = true
 		caption.Nodes = append(caption.Nodes, caps.NewCaptionStyle(false, style))
