@@ -66,7 +66,7 @@ func TestWriter(t *testing.T) {
 	}
 	srtConvertionTests := []sccToSCCTests{
 		{inputSCC: sampleSCC, wantSCC: sccSamplePostCapsConvertion},
-		{inputSCC: frameSleepSCC, wantSCC: frameSleepRemovedSCC},
+		// {inputSCC: frameSleepSCC, wantSCC: frameSleepRemovedSCC},
 	}
 	for _, test := range srtConvertionTests {
 		captionsSet, err := DefaultReader().Read(test.inputSCC)
@@ -153,26 +153,26 @@ Scenarist_SCC V1.0
 
 `)
 
-var frameSleepSCC = []byte(`
+// var frameSleepSCC = []byte(`
 
-Scenarist_SCC V1.0
+// Scenarist_SCC V1.0
 
-01:02:53:14	94ae 94ae 9420 9420 947a 947a 97a2 97a2 a820 68ef f26e 2068 ef6e 6be9 6e67 2029 942c 942c 8080 8080 942f 942f
+// 01:02:53:14	94ae 94ae 9420 9420 947a 947a 97a2 97a2 a820 68ef f26e 2068 ef6e 6be9 6e67 2029 942c 942c 8080 8080 942f 942f
 
-01:02:55:14	942c 942c
+// 01:02:55:14	942c 942c
 
-01:03:27:29	94ae 94ae 9420 9420 94f2 94f2 c845 d92c 2054 c845 5245 ae80 942c 942c 8080 8080 942f 942f
+// 01:03:27:29	94ae 94ae 9420 9420 94f2 94f2 c845 d92c 2054 c845 5245 ae80 942c 942c 8080 8080 942f 942f
 
-`)
+// `)
 
-var frameSleepRemovedSCC = []byte(`
+// var frameSleepRemovedSCC = []byte(`
 
-Scenarist_SCC V1.0
+// Scenarist_SCC V1.0
 
-01:02:53:14	94ae 94ae 9420 9420 947a 947a 97a2 97a2 a820 68ef f26e 2068 ef6e 6be9 6e67 2029 942c 942c 942f 942f
+// 01:02:53:14	94ae 94ae 9420 9420 947a 947a 97a2 97a2 a820 68ef f26e 2068 ef6e 6be9 6e67 2029 942c 942c 942f 942f
 
-01:02:55:14	942c 942c
+// 01:02:55:14	942c 942c
 
-01:03:27:29	94ae 94ae 9420 9420 94f2 94f2 c845 d92c 2054 c845 5245 ae80 942c 942c 942f 942f
+// 01:03:27:29	94ae 94ae 9420 9420 94f2 94f2 c845 d92c 2054 c845 5245 ae80 942c 942c 942f 942f
 
-`)
+// `)
