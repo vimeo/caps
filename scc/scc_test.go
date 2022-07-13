@@ -81,10 +81,10 @@ func TestCaptionContent(t *testing.T) {
 	}
 	captions := captionSet.GetCaptions(caps.DefaultLang)
 	paragraph := captions[2]
-	if math.Abs(float64(paragraph.Start)-17000000) > toleranceMicroseconds {
+	if math.Abs(float64(*paragraph.Start)-17000000) > toleranceMicroseconds {
 		t.Error("paragraph start timestamp over microseconds tolerance")
 	}
-	if math.Abs(float64(paragraph.End)-18752000) > toleranceMicroseconds {
+	if math.Abs(float64(*paragraph.End)-18752000) > toleranceMicroseconds {
 		t.Error("paragraph end timestamp over microseconds tolerance")
 	}
 }

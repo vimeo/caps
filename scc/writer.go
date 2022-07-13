@@ -29,7 +29,7 @@ func (w *Writer) Write(captionSet *caps.CaptionSet) ([]byte, error) {
 	codes := []codeMetadata{}
 	for _, caption := range captions {
 		code := w.textToCode(caption)
-		codes = append(codes, codeMetadata{code, &caption.Start, &caption.End})
+		codes = append(codes, codeMetadata{code, caption.Start, caption.End})
 	}
 
 	for index, metadata := range codes {
