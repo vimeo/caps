@@ -11,24 +11,18 @@ import (
 )
 
 type Parser struct {
-	selfClosingToken bool
-	root             *html.Node
-	sami             string
-	line             string
-	styles           map[string]caps.StyleProps
-	langs            map[string]struct{}
-	lastElement      *html.Tokenizer
-	name2codepoint   map[string]int
+	sami   string
+	line   string
+	styles map[string]caps.StyleProps
+	langs  map[string]struct{}
 }
 
 func NewParser() *Parser {
 	return &Parser{
-		sami:           "",
-		line:           "",
-		styles:         map[string]caps.StyleProps{},
-		langs:          map[string]struct{}{},
-		lastElement:    nil,
-		name2codepoint: map[string]int{"apos": 0x0027},
+		sami:   "",
+		line:   "",
+		styles: map[string]caps.StyleProps{},
+		langs:  map[string]struct{}{},
 	}
 }
 
@@ -117,7 +111,6 @@ func (p *Parser) parseCSS(doc *goquery.Document) (map[string]caps.StyleProps, er
 			sp := caps.DefaultStyleProps()
 			for k, v := range props {
 				switch k {
-
 				case "text-align":
 					sp.TextAlign = v
 				case "font-family":
