@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vimeo/caps"
+	"github.com/thiagopnts/caps"
 )
 
 func TestSRTDetection(t *testing.T) {
