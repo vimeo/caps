@@ -1,8 +1,10 @@
 package caps
 
 import (
+	"bufio"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const DefaultLang = "en-US"
@@ -186,4 +188,13 @@ func (c CaptionSet) GetStyles() []StyleProps {
 		values = append(values, v)
 	}
 	return values
+}
+
+func SplitLines(s string) []string {
+	var lines []string
+	scanner := bufio.NewScanner(strings.NewReader(s))
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
 }

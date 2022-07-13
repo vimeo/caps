@@ -65,7 +65,9 @@ func (r Reader) Read(content []byte) (*caps.CaptionSet, error) {
 		}
 		if len(capNodes) > 0 {
 			capNodes = capNodes[:len(capNodes)-1]
-			c := caps.NewCaption(float64(capStart), float64(capEnd), capNodes, caps.DefaultStyleProps())
+			start := float64(capStart)
+			end := float64(capEnd)
+			c := caps.NewCaption(&start, &end, capNodes, caps.DefaultStyleProps())
 			captions = append(captions, &c)
 		}
 		startLine = endLine

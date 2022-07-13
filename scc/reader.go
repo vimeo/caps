@@ -182,12 +182,12 @@ func (r *Reader) translateCommand(word string) error {
 		if r.paintBuffer != "" {
 			r.rollUp()
 		}
-		if len(r.scc) > 0 && r.scc[len(r.scc)-1].End == 0 {
+		if len(r.scc) > 0 && *r.scc[len(r.scc)-1].End == 0 {
 			lastTime, err := r.translateCurrentTime()
 			if err != nil {
 				return err
 			}
-			r.scc[len(r.scc)-1].End = lastTime
+			r.scc[len(r.scc)-1].End = &lastTime
 		}
 	} else {
 		if r.paintOn {
@@ -218,7 +218,7 @@ func (r *Reader) rollUp() error {
 	if len(r.scc) == 0 {
 		return nil
 	}
-	r.scc[len(r.scc)-1].End = r.paintTime
+	r.scc[len(r.scc)-1].End = &r.paintTime
 	return nil
 }
 
@@ -232,12 +232,13 @@ func (r *Reader) handleDoubleCommand(word string) bool {
 }
 
 func (r *Reader) convertToCaption(buffer string, start float64) {
-	if len(r.scc) > 0 && r.scc[len(r.scc)-1].End == 0 {
+	if len(r.scc) > 0 && *r.scc[len(r.scc)-1].End == 0 {
 		r.scc[len(r.scc)-1].End = r.scc[len(r.scc)-1].Start
 	}
 	r.openItalic = false
 	r.firstElement = true
-	caption := &caps.Caption{Start: start, End: 0}
+	end := float64(0)
+	caption := &caps.Caption{Start: &start, End: &end}
 	for _, element := range strings.Split(buffer, "<$>") {
 		if strings.Trim(element, " ") == "" {
 			continue
