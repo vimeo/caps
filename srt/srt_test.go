@@ -25,8 +25,8 @@ func TestSRTTimestamp(t *testing.T) {
 	captions, err := reader.Read(SampleSRT)
 	assert.Nil(t, err)
 	p := captions.GetCaptions(caps.DefaultLang)[2]
-	assert.Equal(t, 17000000, int(p.Start))
-	assert.Equal(t, 18752000, int(p.End))
+	assert.Equal(t, 17000000, int(*p.Start))
+	assert.Equal(t, 18752000, int(*p.End))
 }
 
 func TestSRTStripFontColor(t *testing.T) {

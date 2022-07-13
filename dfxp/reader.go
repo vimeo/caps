@@ -129,7 +129,8 @@ func (r *reader) translateParentTimedParagraph(paragraph *xmlquery.Node, start, 
 	}
 
 	styles := r.translateStyle(paragraph)
-	caption := caps.NewCaption(float64(start), float64(end), r.nodes, styles)
+	s, e := float64(start), float64(end)
+	caption := caps.NewCaption(&s, &e, r.nodes, styles)
 	return &caption
 }
 
