@@ -109,8 +109,8 @@ func TestReader(t *testing.T) {
 				capts := captionSet.GetCaptions(caps.DefaultLang)
 				assert.Equal(t, 7, len(capts))
 				paragraph := capts[2]
-				assert.Equal(t, 18752000, int(paragraph.Start))
-				assert.Equal(t, 20887000, int(paragraph.End))
+				assert.Equal(t, 18752000, int(*paragraph.Start))
+				assert.Equal(t, 20887000, int(*paragraph.End))
 			},
 		},
 		{
