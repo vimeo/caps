@@ -100,27 +100,24 @@ func srtToMicro(stamp string) (int64, error) {
 	if !strings.Contains(timesplit[2], ",") {
 		timesplit[2] = fmt.Sprintf("%s,000", timesplit[2])
 	}
+	timesplit0, err := strconv.ParseInt(timesplit[0], base10, bitSize64)
+	if err != nil {
+		return 0, err
+	}
+	timesplit1, err := strconv.ParseInt(timesplit[1], base10, bitSize64)
+	if err != nil {
+		return 0, err
+	}
 	secsplit := strings.Split(timesplit[2], ",")
-	timesplit0, err := strconv.ParseInt(timesplit[0], 10, 64)
+	secsplit0, err := strconv.ParseInt(secsplit[0], base10, bitSize64)
 	if err != nil {
 		return 0, err
 	}
-	timesplit1, err := strconv.ParseInt(timesplit[1], 10, 64)
+	secsplit1, err := strconv.ParseInt(secsplit[1], base10, bitSize64)
 	if err != nil {
 		return 0, err
 	}
-	secsplit0, err := strconv.ParseInt(secsplit[0], 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	secsplit1, err := strconv.ParseInt(secsplit[1], 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	microseconds := timesplit0*3600000000 +
-		timesplit1*60000000 +
-		secsplit0*1000000 +
-		secsplit1*1000
+	microseconds := timesplit0*microHr + timesplit1*microMin + secsplit0*microSec + secsplit1*microMilli
 	return microseconds, nil
 }
 
