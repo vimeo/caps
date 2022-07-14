@@ -1,6 +1,7 @@
 package webvtt
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -84,7 +85,7 @@ func (r *reader) parse(lines []string) ([]*caps.Caption, error) {
 }
 
 func (r *reader) Detect(content []byte) bool {
-	return strings.Contains(string(content), "WEBVTT")
+	return bytes.HasPrefix(content, []byte("WEBVTT"))
 }
 
 // Reader helpers
