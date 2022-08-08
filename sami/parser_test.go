@@ -180,6 +180,12 @@ func TestParser(t *testing.T) {
         </sami>`,
 			expectedErr: false,
 		},
+		{
+			name:        "ignores tag without a pair",
+			input:       strings.NewReader(`<sami></body></sami>`),
+			expected:    `<sami></sami>`,
+			expectedErr: false,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {

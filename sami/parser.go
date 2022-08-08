@@ -129,8 +129,11 @@ func (p *parser) parse() error {
 // nodeStack is a stack of nodes.
 type nodeStack []*html.Node
 
-// pop pops the stack. It will panic if s is empty.
+// pop pops the stack.
 func (s *nodeStack) pop() *html.Node {
+	if len(*s) == 0 {
+		return nil
+	}
 	i := len(*s)
 	n := (*s)[i-1]
 	*s = (*s)[:i-1]
