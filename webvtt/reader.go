@@ -10,6 +10,10 @@ import (
 	"github.com/vimeo/caps"
 )
 
+type Reader struct {
+	ignoreTimingErrors bool
+}
+
 const (
 	bitSize64  int     = 64
 	secHr      float64 = 3600
@@ -26,11 +30,7 @@ var (
 	webvttTiming     = "-->"
 )
 
-type reader struct {
-	ignoreTimingErrors bool
-}
-
-func (r *reader) Read(content []byte) (*caps.CaptionSet, error) {
+func (r *Reader) Read(content []byte) (*caps.CaptionSet, error) {
 	captionSet := caps.NewCaptionSet()
 	captions, err := r.parse(caps.SplitLines(string(content)))
 	if err != nil {
@@ -43,7 +43,7 @@ func (r *reader) Read(content []byte) (*caps.CaptionSet, error) {
 	return captionSet, nil
 }
 
-func (r *reader) parse(lines []string) ([]*caps.Caption, error) {
+func (r *Reader) parse(lines []string) ([]*caps.Caption, error) {
 	captions := []*caps.Caption{}
 	foundTiming := false
 	var caption *caps.Caption
@@ -84,7 +84,7 @@ func (r *reader) parse(lines []string) ([]*caps.Caption, error) {
 	return captions, nil
 }
 
-func (r *reader) Detect(content []byte) bool {
+func (r Reader) Detect(content []byte) bool {
 	return bytes.HasPrefix(content, []byte("WEBVTT"))
 }
 
